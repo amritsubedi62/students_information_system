@@ -13,6 +13,16 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('teacher', 'parent') NOT NULL DEFAULT 'parent'
 );
 
+CREATE TABLE attendance_monthly (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  month VARCHAR(7) NOT NULL,   -- YYYY-MM
+  total_days INT NOT NULL,
+  present_days INT NOT NULL,
+  UNIQUE(student_id, month)
+);
+
+
 -- Insert default admin/teacher
 INSERT INTO users (username, email, password, role)
 VALUES ('admin', 'admin@gmail.com', 'admin123', 'teacher');

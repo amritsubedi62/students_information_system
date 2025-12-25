@@ -7,34 +7,64 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
 
 include "config/db.php";
 
-if (isset($_POST['add_student'])) {
-    $name = $_POST['name'];
-    $class = $_POST['class'];
-    $roll = $_POST['roll_no'];
+if (isset($_POST['save_student'])) {
 
-    // Validate class
+    $name  = $_POST['name'];
+    $class = $_POST['class'];
+    $roll  = $_POST['roll_no'];
+    $id    = $_POST['id'];
+
     if ($class < 1 || $class > 10) {
         echo "<script>alert('Class must be between 1 and 10');</script>";
     } else {
-        // Check if roll number already exists in this class
-        $check = mysqli_query($conn, "SELECT * FROM students WHERE class='$class' AND roll_no='$roll'");
-        if (mysqli_num_rows($check) > 0) {
-            echo "<script>alert('This roll number already exists for class $class');</script>";
-        } else {
-            mysqli_query($conn,
-                "INSERT INTO students (name, class, roll_no)
-                 VALUES ('$name','$class','$roll')"
+
+        if ($id == "") {
+            $check = mysqli_query($conn,
+                "SELECT * FROM students WHERE class='$class' AND roll_no='$roll'"
             );
-            echo "<script>alert('Student added successfully');</script>";
-        }
+            if (mysqli_num_rows($check) > 0) {
+                echo "<script>alert('Roll number already exists in this class');</script>";
+            } else {
+                mysqli_query($conn,
+                    "INSERT INTO students (name, class, roll_no)
+                     VALUES ('$name','$class','$roll')"
+                );
+                echo "<script>alert('Student added successfully');</script>";
+            }
+        } else {
+      
+          $check = mysqli_query($conn,
+              "SELECT * FROM students 
+               WHERE class='$class' 
+               AND roll_no='$roll' 
+               AND id!='$id'"
+          );
+      
+          if (mysqli_num_rows($check) > 0) {
+              echo "<script>alert('Roll number already exists in this class');</script>";
+          } else {
+              mysqli_query($conn,
+                  "UPDATE students SET
+                   name='$name',
+                   class='$class',
+                   roll_no='$roll'
+                   WHERE id='$id'"
+              );
+              echo "<script>alert('Student updated successfully');</script>";
+          }
+      }
     }
-}
+  }
 
 
-
-/* Delete student */
 if (isset($_GET['delete'])) {
     mysqli_query($conn, "DELETE FROM students WHERE id=".$_GET['delete']);
+}
+
+$editData = null;
+if (isset($_GET['edit'])) {
+    $res = mysqli_query($conn, "SELECT * FROM students WHERE id=".$_GET['edit']);
+    $editData = mysqli_fetch_assoc($res);
 }
 ?>
 
@@ -42,186 +72,74 @@ if (isset($_GET['delete'])) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Manage Students - Student Information System</title>
+<title>Manage Students</title>
 <link rel="stylesheet" href="assets/css/style.css">
 
-<style>
-
-
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f0f2f5;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.navbar {
-  width: 100%;
-  height: 70px;
-  background-color: #d32f2f;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.logo {
-  font-size: 22px;
-  font-weight: 600;
-  color: white;
-}
-
-.content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px;
-}
-
-.content h2 {
-  margin-bottom: 40px;
-  color: #333;
-}
-
-.dashboard {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
-  max-width: 1200px;
-}
-
-.card {
-  background-color: #ffffff;
-  width: 300px;
-  padding: 25px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.3s, background 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  background-color: #ffeaea;
-}
-
-.card h3 {
-  color: #d32f2f;
-  margin-bottom: 15px;
-}
-
-.card p {
-  color: #555;
-  margin-bottom: 20px;
-}
-
-.card input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.card button {
-  width: 100%;
-  padding: 10px;
-  background-color: #d32f2f;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.card button:hover {
-  background-color: #9a0007;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table th, table td {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-}
-
-table th {
-  background-color: #f5f5f5;
-}
-
-.delete {
-  color: #d32f2f;
-  text-decoration: none;
-}
-</style>
 </head>
 
 <body>
+<?php include "includes/navbar.php"; ?>
 
-<!-- Navbar -->
-<div class="navbar">
-  <h1 class="logo">Student Information System</h1>
+<div class="content">
+<h2>Manage Students </h2>
+
+<div class="dashboard">
+
+
+<div class="card">
+<h3><?= $editData ? "Update Student" : "Add Student" ?></h3>
+
+<form method="POST">
+<input type="hidden" name="id" value="<?= $editData['id'] ?? '' ?>">
+
+<input type="text" name="name"
+placeholder="Student Name"
+value="<?= $editData['name'] ?? '' ?>" required>
+
+<input type="number" name="class" min="1" max="10"
+placeholder="Class"
+value="<?= $editData['class'] ?? '' ?>" required>
+
+<input type="number" name="roll_no"
+placeholder="Roll No"
+value="<?= $editData['roll_no'] ?? '' ?>" required>
+
+<button name="save_student">
+<?= $editData ? "Update Student" : "Add Student" ?>
+</button>
+</form>
 </div>
 
-<!-- Main content -->
-<div class="content">
-  <h2>Manage Students 👩‍🏫</h2>
+<div class="card" style="width:450px;">
+<h3>Student List</h3>
 
-  <div class="dashboard">
+<table>
+<tr>
+<th>Name</th>
+<th>Class</th>
+<th>Roll</th>
+<th>Action</th>
+</tr>
 
-    <!-- ADD STUDENT CARD -->
-    <div class="card">
-      <h3>Add Student</h3>
-      <p>Enter student details</p>
+<?php
+$q = mysqli_query($conn,"SELECT * FROM students");
+while ($s = mysqli_fetch_assoc($q)) {
+echo "<tr>
+<td>{$s['name']}</td>
+<td>{$s['class']}</td>
+<td>{$s['roll_no']}</td>
+<td>
+<a href='?edit={$s['id']}'>Edit</a> |
+<a class='delete' href='?delete={$s['id']}'
+onclick='return confirm(\"Delete this student?\")'>Delete</a>
+</td>
+</tr>";
+}
+?>
+</table>
+</div>
 
-      <form method="POST">
-        <input type="text" name="name" placeholder="Student Name" required>
-        <input type="number" name="class" placeholder="Class" min="1" max="10" required>
-        <input type="number" name="roll_no" placeholder="Roll No" required>
-        <button name="add_student">Add Student</button>
-      </form>
-    </div>
-
-    <!-- STUDENT LIST CARD -->
-    <div class="card" style="width:450px;">
-      <h3>Student List</h3>
-      <p>Registered students</p>
-
-      <table>
-        <tr>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Roll</th>
-          <th>Action</th>
-        </tr>
-
-        <?php
-        $q = mysqli_query($conn,"SELECT * FROM students");
-        while ($s = mysqli_fetch_assoc($q)) {
-          echo "<tr>
-            <td>{$s['name']}</td>
-            <td>{$s['class']}</td>
-            <td>{$s['roll_no']}</td>
-            <td>
-              <a class='delete' href='?delete={$s['id']}'
-              onclick='return confirm(\"Delete this student?\")'>Delete</a>
-            </td>
-          </tr>";
-        }
-        ?>
-      </table>
-    </div>
-
-  </div>
+</div>
 </div>
 
 </body>

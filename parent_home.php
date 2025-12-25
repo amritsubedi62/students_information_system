@@ -2,35 +2,30 @@
 session_start();
 include("config/db.php");
 
-// Redirect if not logged in or not parent
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'parent') {
     header("Location: login.php");
     exit;
 }
 
-// Get parent ID
+
 $parent_id = $_SESSION['user_id'];
 
-// Get the child of this parent
 $student_sql = "SELECT * FROM students WHERE parent_id = '$parent_id'";
 $student_result = mysqli_query($conn, $student_sql);
 
-// If parent has no child registered
+
 if (mysqli_num_rows($student_result) == 0) {
     $student = null;
 } else {
     $student = mysqli_fetch_assoc($student_result);
     $student_id = $student['id'];
 
-    // Get Results
     $results_sql = "SELECT * FROM results WHERE student_id='$student_id'";
     $results = mysqli_query($conn, $results_sql);
 
-    // Get Attendance
     $attendance_sql = "SELECT * FROM attendance WHERE student_id='$student_id' ORDER BY date DESC";
     $attendance = mysqli_query($conn, $attendance_sql);
-
-    // Get Performance (optional)
+ 
     $performance_sql = "SELECT * FROM performance WHERE student_id='$student_id'";
     $performance = mysqli_query($conn, $performance_sql);
 }
