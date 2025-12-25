@@ -6,8 +6,8 @@ $message = "";
 
 // Hashing Algorithm 
 function customHash($password, $username) {
-    $salt = "SIS_2025_" . $username;
-    $input = $password . $salt;
+    $add = "SIS_2025_" . $username;
+    $input = $password . $add;
 
     $hash = 11;
     for ($round = 0; $round < 4; $round++) {
@@ -62,9 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
 <style>
-/* =========================
-   Global Styles
-========================= */
+
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
