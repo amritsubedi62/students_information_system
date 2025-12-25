@@ -6,8 +6,8 @@ $message = "";
 
 // Hashing Algorithm 
 function customHash($password, $username) {
-    $salt = "SIS_2025_" . $username;
-    $input = $password . $salt;
+    $add = "SIS_2025_" . $username;
+    $input = $password . $add;
 
     $hash = 11;
     for ($round = 0; $round < 4; $round++) {
