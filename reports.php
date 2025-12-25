@@ -6,6 +6,6 @@
   <title>Manage Result</title>
 </head>
 <body>
-    <h1> This page is under construction </h1>
+    <h1> This page is under construction. Soon we will complete this. </h1>
 </body>
 </html>
