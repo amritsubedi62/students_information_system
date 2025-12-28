@@ -95,6 +95,7 @@ if ($selectedClass && $selectedStudent) {
 body{margin:0; font-family:Arial,sans-serif;}
 .content{width:95%; margin:auto; padding-bottom:50px;}
 .card{width:100%; margin-bottom:20px; padding:15px; box-sizing:border-box; background:#f9f9f9; border-radius:5px; box-shadow:0 0 5px rgba(0,0,0,0.1);}
+
 table{width:100%; border-collapse:collapse; margin-top:10px;}
 th, td{border:1px solid #ccc; padding:8px; text-align:center;}
 td.fail{color:red; font-weight:bold;}
@@ -102,6 +103,25 @@ td.fail{color:red; font-weight:bold;}
 .alert{color:red; font-weight:bold; text-align:center; margin-bottom:15px;}
 h3{margin-top:0;}
 canvas{width:100% !important; max-width:100%; height:400px !important;}
+</style>
+<style>
+.cards-container{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+}
+.chart-card{
+    flex: 1 1 calc(50% - 20px); /* two per row */
+    box-sizing:border-box;
+    background:#f9f9f9;
+    padding:15px;
+    border-radius:5px;
+    box-shadow:0 0 5px rgba(0,0,0,0.1);
+}
+canvas{
+    width:100% !important;
+    height:300px !important; /* smaller height */
+}
 </style>
 </head>
 <body>
@@ -158,23 +178,20 @@ canvas{width:100% !important; max-width:100%; height:400px !important;}
 </table>
 </div>
 
-<div class="card">
-<h3>Marks Chart</h3>
-<canvas id="marksChart"></canvas>
-</div>
+<div class="cards-container">
+    <?php if($resultsComplete): ?>
+    <div class="chart-card">
+        <h3>Marks Chart</h3>
+        <canvas id="marksChart"></canvas>
+    </div>
+    <?php endif; ?>
 
-<div class="card">
-<h3>Feedback</h3>
-<ul>
-<?php foreach($feedback as $f): ?><li><?= $f ?></li><?php endforeach; ?>
-</ul>
-</div>
-<?php endif; ?>
-
-<?php if($attendanceComplete): ?>
-<div class="card">
-<h3>Attendance Overview</h3>
-<canvas id="attendanceChart"></canvas>
+    <?php if($attendanceComplete): ?>
+    <div class="chart-card">
+        <h3>Attendance Overview</h3>
+        <canvas id="attendanceChart"></canvas>
+    </div>
+    <?php endif; ?>
 </div>
 
 <div class="card scrollable">
