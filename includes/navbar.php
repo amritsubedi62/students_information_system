@@ -6,7 +6,11 @@ if (session_status() === PHP_SESSION_NONE) {
 ?>
 
 <div class="navbar">
-    <h1 class="logo">Student Information System</h1>
+<h1 class="logo">
+  <a href="homepage.php" style="text-decoration:none; color:inherit;">
+    Student Information System
+  </a>
+</h1>
 
     <?php if (isset($_SESSION['user_id'])): ?>
         <button class="logout-btn" onclick="logoutConfirm()" title="Logout">🔓</button>

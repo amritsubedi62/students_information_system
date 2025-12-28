@@ -1,29 +1,16 @@
-/* =========================
-   Global Reset & Base
-========================= */
-*
- {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-}
-
 body {
   background: linear-gradient(135deg, #f0f2f5, #e3e6eb);
   min-height: 100vh;
   animation: fadeIn 0.8s ease-in;
 }
 
-/* Fade animation */
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* =========================
-   Navbar
-========================= */
+
 .navbar {
   width: 100%;
   height: 70px;
@@ -39,6 +26,7 @@ body {
   color: white;
   font-size: 22px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Logout button (right side) */
@@ -56,9 +44,7 @@ body {
   transform: scale(1.1);
 }
 
-/* =========================
-   Content Area
-========================= */
+
 .content {
   padding: 40px;
   text-align: center;
@@ -69,9 +55,7 @@ body {
   color: #333;
 }
 
-/* =========================
-   Dashboard Layout
-========================= */
+
 .dashboard {
   display: flex;
   gap: 30px;
@@ -79,9 +63,6 @@ body {
   flex-wrap: wrap;
 }
 
-/* =========================
-   Cards
-========================= */
 .card {
   background: #fff;
   padding: 25px;
@@ -107,9 +88,7 @@ body {
   margin-bottom: 15px;
 }
 
-/* =========================
-   Form Elements
-========================= */
+
 .card input {
   width: 100%;
   padding: 10px;
@@ -135,9 +114,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* =========================
-   Table Styles
-========================= */
 table {
   width: 100%;
   margin-top: 10px;
@@ -154,9 +130,7 @@ th {
   background-color: #f5f5f5;
 }
 
-/* =========================
-   Action Links
-========================= */
+
 a {
   color: #d32f2f;
   text-decoration: none;
@@ -172,9 +146,6 @@ a:hover {
   margin-left: 10px;
 }
 
-/* =========================
-   Login & Signup Centered
-========================= */
 .container {
   width: 100%;
   max-width: 420px;
@@ -185,29 +156,29 @@ a:hover {
   animation: slideUp 0.6s ease;
 }
 
-/* Center login/signup only */
 body:has(.container) {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Slide animation */
+
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* =========================
-   Responsive
-========================= */
+
 @media (max-width: 768px) {
   .dashboard {
     flex-direction: column;
   }
 
   .navbar {
-    padding: 0 20px;
-  }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 }
 

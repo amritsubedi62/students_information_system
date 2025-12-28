@@ -42,13 +42,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
 
     <div class="card">
       <h3>Manage Results</h3>
-      <p>Enter and analyze student marks and grades.</p>
+      <p>Enter subject-wise marks.</p>
       <a href="manage_results.php">Go →</a>
     </div>
 
     <div class="card">
+      <h3>Class Results & Ranking</h3>
+      <p>View class-wise results, percentage & rank.</p>
+      <a href="class_results.php">Go →</a>
+    </div>
+
+    <div class="card">
       <h3>Reports & Analytics</h3>
-      <p>View performance and generate reports.</p>
+      <p>Overall performance and insights.</p>
       <a href="reports.php">Go →</a>
     </div>
   </div>
