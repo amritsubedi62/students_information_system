@@ -302,13 +302,7 @@ canvas{width:100%!important;height:260px!important}
 </head>
 
 <body>
-<<<<<<< HEAD
-<<<<<<< HEAD
-    <h1> This page is under construction. Soon we will complete this. </h1>
-=======
-=======
 
->>>>>>> 90c2646ed9850342b773a12cc9717384bc4b000a
 <?php include "includes/navbar.php"; ?>
 
 <div class="container">
@@ -462,11 +456,5 @@ new Chart(attendanceChart,{
 <?php endif; ?>
 </script>
 
-<<<<<<< HEAD
-<?php endif; ?>
-</div>
->>>>>>> 1cf45459ec33a03ea3a9d8c7baeb929393b8af52
-=======
->>>>>>> 90c2646ed9850342b773a12cc9717384bc4b000a
 </body>
 </html>
