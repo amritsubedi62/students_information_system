@@ -78,6 +78,8 @@ if (isset($_GET['edit'])) {
 </head>
 
 <body>
+<a href="homepage.php" style="position:absolute; top:15px; left:15px; font-size:24px; text-decoration:none; color:white;">←</a>
+
 <?php include "includes/navbar.php"; ?>
 
 <div class="content">

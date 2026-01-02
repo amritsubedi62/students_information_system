@@ -142,8 +142,7 @@ if (mysqli_num_rows($student_result) == 0) {
       <?php endif; ?>
     <?php endif; ?>
 
-    <form action="logout.php" method="POST">
-      <button type="submit" class="logout-btn">Logout</button>
+
     </form>
   </div>
 </body>

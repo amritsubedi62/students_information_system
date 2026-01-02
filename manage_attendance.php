@@ -60,13 +60,14 @@ function partition(&$arr, $low, $high) {
 <html>
 <head>
     <title>Manage Attendance</title>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 
 <style>
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
     background: #f2f3f5;
 }
 
@@ -153,6 +154,9 @@ button:hover {
 </style>
 
 <body>
+<a href="homepage.php" style="position:absolute; top:15px; left:15px; font-size:24px; text-decoration:none; color:white;">←</a>
+
+<?php include "includes/navbar.php"; ?>
 
 <div class="content">
 <h2>Manage Attendance </h2>
