@@ -4,206 +4,394 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     header("Location: login.php");
     exit;
 }
-
 include "config/db.php";
 
 $subjects = ['Math','Science','Social','English','Nepali'];
 $selectedClass = $_GET['class'] ?? '';
 $selectedStudent = $_GET['student_id'] ?? '';
+
 $studentData = null;
 $resultsData = [];
 $feedback = [];
 $monthlyAttendance = [];
 $dailyAttendance = [];
+
 $totalSchoolDays = 0;
 $totalPresentDays = 0;
+$currentMonth = date('Y-m');
 
-$currentMonth = date('Y-m'); // e.g., 2025-12
 $resultsComplete = false;
 $attendanceComplete = false;
 $message = '';
 
 if ($selectedClass && $selectedStudent) {
-    // Fetch student info
-    $res = mysqli_query($conn, "SELECT * FROM students WHERE id='$selectedStudent' AND class='$selectedClass'");
-    $studentData = mysqli_fetch_assoc($res);
 
-    // Fetch results
+    /* STUDENT */
+    $studentData = mysqli_fetch_assoc(
+        mysqli_query($conn,"SELECT * FROM students WHERE id='$selectedStudent' AND class='$selectedClass'")
+    );
+
+    /* RESULTS */
     $totalMarks = 0;
     $pass = true;
     $resultsComplete = true;
+
     foreach ($subjects as $sub) {
-        $r = mysqli_query($conn, "SELECT marks FROM results WHERE student_id='$selectedStudent' AND subject='$sub'");
+        $r = mysqli_query($conn,"SELECT marks FROM results WHERE student_id='$selectedStudent' AND subject='$sub'");
         $row = mysqli_fetch_assoc($r);
         if ($row && $row['marks'] !== null) {
             $mark = $row['marks'];
         } else {
             $mark = 0;
-            $resultsComplete = false; // incomplete if any subject missing
+            $resultsComplete = false;
         }
         $resultsData[$sub] = $mark;
         $totalMarks += $mark;
-        if ($mark < 40) {
-            $pass = false;
-        }
+        if ($mark < 40) $pass = false;
     }
 
-    if (!$resultsComplete) {
-        $message = "Please update marks for all 5 subjects to view results, charts, and feedback.";
-    } else {
+    if ($resultsComplete) {
         $percentage = round(($totalMarks/500)*100,2);
 
-        foreach ($subjects as $sub) {
-            if ($resultsData[$sub] < 40) $feedback[] = "Needs improvement in $sub";
+        /* SUBJECT FEEDBACK */
+        foreach ($subjects as $s) {
+            if ($resultsData[$s] >= 85)
+                $feedback[] = "Excellent performance in $s, showing strong understanding of concepts.";
+            elseif ($resultsData[$s] >= 70)
+                $feedback[] = "Good performance in $s, but some improvements can be made.";
+            elseif ($resultsData[$s] >= 50)
+                $feedback[] = "Average performance in $s; needs more practice and focus.";
+            else
+                $feedback[] = "Critical improvement required in $s; extra support recommended.";
         }
-        if ($percentage >= 90 && $pass) $feedback[] = "Excellent overall performance!";
-        elseif ($percentage >= 75 && $pass) $feedback[] = "Very good, keep it up!";
-        elseif ($percentage >= 60 && $pass) $feedback[] = "Good, continue improving!";
-        elseif ($percentage >= 50 && $pass) $feedback[] = "Average, need more effort!";
-        elseif ($percentage < 50) $feedback[] = "Significant improvement needed!";
+
+        /* OVERALL PERFORMANCE FEEDBACK */
+        if ($percentage >= 90)
+            $feedback[] = "Outstanding overall academic performance.";
+        elseif ($percentage >= 75)
+            $feedback[] = "Very good performance overall; consistent effort noted.";
+        elseif ($percentage >= 60)
+            $feedback[] = "Good performance but room for improvement in some areas.";
+        elseif ($percentage >= 50)
+            $feedback[] = "Average performance; encourage focused study.";
+        else
+            $feedback[] = "Significant academic improvement required.";
+
+    } else {
+        $message = "Please update all subject marks to view full report.";
     }
 
-    // Monthly attendance
-    $maRes = mysqli_query($conn, "SELECT * FROM attendance_monthly WHERE student_id='$selectedStudent' ORDER BY month DESC");
-    while($m = mysqli_fetch_assoc($maRes)){
-        $monthlyAttendance[$m['month']] = ['total_days'=>$m['total_days'],'present_days'=>$m['present_days']];
+    /* MONTHLY ATTENDANCE */
+    $ma = mysqli_query($conn,"SELECT * FROM attendance_monthly WHERE student_id='$selectedStudent' ORDER BY month DESC");
+    while($m=mysqli_fetch_assoc($ma)){
+        $monthlyAttendance[$m['month']] = $m;
         $totalSchoolDays += $m['total_days'];
         $totalPresentDays += $m['present_days'];
     }
 
-    // Daily attendance
-    $daRes = mysqli_query($conn, "SELECT * FROM attendance WHERE student_id='$selectedStudent' AND DATE_FORMAT(date,'%Y-%m')='$currentMonth' ORDER BY date DESC");
-    while($d = mysqli_fetch_assoc($daRes)){
-        $dailyAttendance[] = $d;
+    /* DAILY ATTENDANCE */
+    $da = mysqli_query($conn,"SELECT * FROM attendance 
+        WHERE student_id='$selectedStudent' 
+        AND DATE_FORMAT(date,'%Y-%m')='$currentMonth'
+        ORDER BY date DESC");
+    while($d=mysqli_fetch_assoc($da)) $dailyAttendance[] = $d;
+
+    $attendanceComplete = !empty($monthlyAttendance);
+    $attendancePercent = $totalSchoolDays ? round(($totalPresentDays/$totalSchoolDays)*100,2) : 0;
+
+    /* ATTENDANCE FEEDBACK */
+    if ($attendancePercent >= 95)
+        $feedback[] = "Excellent attendance, demonstrating strong discipline and commitment.";
+    elseif ($attendancePercent >= 80)
+        $feedback[] = "Good attendance, but some absences noted. Aim for consistency.";
+    else
+        $feedback[] = "Low attendance; may impact academic progress. Regular attendance recommended.";
+
+    /* GENERAL FEEDBACK */
+    $feedback[] = "This report is automatically generated by the Student Information System.";
+}
+
+/* PDF DOWNLOAD */
+if (isset($_GET['download_pdf']) && $studentData) {
+    require('fpdf.php');
+
+    $pdf = new FPDF();
+    $pdf->AddPage();
+
+    // TITLE
+    $pdf->SetFont('Arial','B',16);
+    $pdf->Cell(0,10,'Student Performance Report',0,1,'C');
+    $pdf->Ln(5);
+
+    // STUDENT INFO
+    $pdf->SetFont('Arial','',12);
+    $pdf->Cell(0,8,"Name: {$studentData['name']}",0,1);
+    $pdf->Cell(0,8,"Class: {$studentData['class']}  Roll: {$studentData['roll_no']}",0,1);
+    $pdf->Ln(5);
+
+    // SUBJECT RESULTS
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(0,8,"Subject-wise Results",0,1);
+    $pdf->SetFont('Arial','',11);
+    foreach ($resultsData as $sub=>$mark) {
+        $pdf->Cell(0,7,"$sub : $mark",0,1);
+    }
+    $pdf->Ln(3);
+    $pdf->Cell(0,7,"Total: $totalMarks   Percentage: $percentage%",0,1);
+    $pdf->Ln(5);
+
+    // MONTHLY ATTENDANCE
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(0,8,"Monthly Attendance",0,1);
+    $pdf->SetFont('Arial','',11);
+    $pdf->Cell(40,7,"Month",1);
+    $pdf->Cell(30,7,"Total",1);
+    $pdf->Cell(30,7,"Present",1);
+    $pdf->Cell(30,7,"Absent",1);
+    $pdf->Ln();
+    foreach($monthlyAttendance as $m=>$v){
+        $pdf->Cell(40,7,$m,1);
+        $pdf->Cell(30,7,$v['total_days'],1);
+        $pdf->Cell(30,7,$v['present_days'],1);
+        $pdf->Cell(30,7,$v['total_days']-$v['present_days'],1);
+        $pdf->Ln();
+    }
+    $pdf->Ln(5);
+
+    // DAILY ATTENDANCE
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(0,8,"Daily Attendance ($currentMonth)",0,1);
+    $pdf->SetFont('Arial','',11);
+    $pdf->Cell(40,7,"Date",1);
+    $pdf->Cell(40,7,"Status",1);
+    $pdf->Ln();
+    foreach($dailyAttendance as $d){
+        $pdf->Cell(40,7,$d['date'],1);
+        if($d['status']=='Absent'){
+            $pdf->SetTextColor(211,47,47); // red
+            $pdf->Cell(40,7,$d['status'],1);
+            $pdf->SetTextColor(0,0,0); // reset
+        }else{
+            $pdf->Cell(40,7,$d['status'],1);
+        }
+        $pdf->Ln();
+    }
+    $pdf->Ln(5);
+
+    // FEEDBACK
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(0,8,"Feedback",0,1);
+    $pdf->SetFont('Arial','',11);
+    foreach ($feedback as $f) {
+        $pdf->MultiCell(0,6,"- $f");
     }
 
-    $attendanceComplete = !empty($monthlyAttendance) && !empty($dailyAttendance);
-    if (!$attendanceComplete) {
-        $message .= ($message ? " " : "") . "Attendance data is incomplete.";
-    }
+    // OUTPUT PDF
+    $pdf->Output("D", "Student_Report_{$studentData['name']}.pdf");
+    exit;
 }
+
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Student Analytics - Full</title>
-<link rel="stylesheet" href="assets/css/style.css">
+<title>Student Analytics</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body{margin:0; font-family:Arial,sans-serif;}
-.content{width:95%; margin:auto; padding-bottom:50px;}
-.card{width:100%; margin-bottom:20px; padding:15px; box-sizing:border-box; background:#f9f9f9; border-radius:5px; box-shadow:0 0 5px rgba(0,0,0,0.1);}
 
-table{width:100%; border-collapse:collapse; margin-top:10px;}
-th, td{border:1px solid #ccc; padding:8px; text-align:center;}
-td.fail{color:red; font-weight:bold;}
-.scrollable{max-height:300px; overflow-y:auto;}
-.alert{color:red; font-weight:bold; text-align:center; margin-bottom:15px;}
-h3{margin-top:0;}
-canvas{width:100% !important; max-width:100%; height:400px !important;}
-</style>
 <style>
-.cards-container{
-    display:flex;
-    flex-wrap:wrap;
-    gap:20px;
+body{
+  background:linear-gradient(135deg,#f0f2f5,#e3e6eb);
+  font-family:Arial,sans-serif;
+  margin:0;
 }
-.chart-card{
-    flex: 1 1 calc(50% - 20px); /* two per row */
-    box-sizing:border-box;
-    background:#f9f9f9;
-    padding:15px;
-    border-radius:5px;
-    box-shadow:0 0 5px rgba(0,0,0,0.1);
+
+/* NAVBAR */
+.navbar{
+  height:70px;
+  background:#d32f2f;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 40px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
 }
-canvas{
-    width:100% !important;
-    height:300px !important; /* smaller height */
+.logo{
+  color:#fff;
+  font-size:22px;
+  font-weight:600;
+}
+.logout-btn{
+  background:none;
+  border:none;
+  font-size:26px;
+  cursor:pointer;
+  color:white;
+}
+.logout-btn:hover{color:#ffdada}
+
+/* CONTENT */
+.container{
+  max-width:1400px;
+  margin:auto;
+  padding:40px;
+}
+h2,h3{color:#d32f2f}
+
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.12);
+  margin-bottom:25px;
+}
+
+.search-form{text-align:center}
+.search-form select,.search-form button{
+  padding:10px;
+  margin:5px;
+}
+.search-form button{
+  background:#d32f2f;
+  color:white;
+  border:none;
+  border-radius:6px;
+}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+}
+.stat-box{
+  background:#fdecea;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+  font-weight:bold;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+}
+th{background:#f5f5f5}
+.fail{color:#d32f2f;font-weight:bold}
+
+.charts-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:25px;
+}
+.chart-box{height:350px}
+canvas{width:100%!important;height:260px!important}
+
+.scrollable{max-height:300px;overflow-y:auto}
+.alert{color:#d32f2f;font-weight:bold;text-align:center}
+
+@media(max-width:900px){
+  .stats-grid,.charts-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
+
 <body>
+
 <?php include "includes/navbar.php"; ?>
 
-<div class="content">
-<h2>Student Analytics</h2>
+<div class="container">
+<h2>Student Performance Report</h2>
 
-<!-- Search Section -->
 <div class="card">
-<form method="GET" style="text-align:center;">
-    <select name="class" required>
-        <option value="">Select Class</option>
-        <?php for($i=1;$i<=10;$i++): ?>
-            <option value="<?= $i ?>" <?= ($selectedClass==$i)?'selected':'' ?>>Class <?= $i ?></option>
-        <?php endfor; ?>
-    </select>
+<form method="GET" class="search-form">
+  <select name="class" required>
+    <option value="">Select Class</option>
+    <?php for($i=1;$i<=10;$i++): ?>
+      <option value="<?= $i ?>" <?= ($selectedClass==$i)?'selected':'' ?>>Class <?= $i ?></option>
+    <?php endfor; ?>
+  </select>
 
-    <?php if ($selectedClass): ?>
+  <?php if($selectedClass): ?>
     <select name="student_id" required>
-        <option value="">Select Student</option>
-        <?php
-        $sres = mysqli_query($conn,"SELECT * FROM students WHERE class='$selectedClass' ORDER BY roll_no");
-        while($s = mysqli_fetch_assoc($sres)):
-        ?>
-        <option value="<?= $s['id'] ?>" <?= ($selectedStudent==$s['id'])?'selected':'' ?>>Roll <?= $s['roll_no'] ?> - <?= $s['name'] ?></option>
-        <?php endwhile; ?>
+      <option value="">Select Student</option>
+      <?php
+      $s=mysqli_query($conn,"SELECT * FROM students WHERE class='$selectedClass' ORDER BY roll_no");
+      while($st=mysqli_fetch_assoc($s)):
+      ?>
+      <option value="<?= $st['id'] ?>" <?= ($selectedStudent==$st['id'])?'selected':'' ?>>
+        Roll <?= $st['roll_no'] ?> - <?= $st['name'] ?>
+      </option>
+      <?php endwhile; ?>
     </select>
-    <?php endif; ?>
-    <button type="submit">Show</button>
+  <?php endif; ?>
+
+  <!-- BUTTONS SIDE BY SIDE -->
+  <button type="submit" name="generate_report">Generate Report</button>
+
+  <?php if($selectedClass && $selectedStudent): ?>
+    <button type="submit" name="download_pdf" value="1" style="margin-left:10px; background:#d32f2f;">
+      ⬇ Download PDF
+    </button>
+  <?php endif; ?>
 </form>
 </div>
 
-<?php if($message): ?>
-<div class="alert"><?= $message ?></div>
-<?php endif; ?>
+
+<?php if($message): ?><div class="alert"><?= $message ?></div><?php endif; ?>
 
 <?php if($studentData): ?>
+
 <div class="card">
 <h3><?= $studentData['name'] ?> (Roll <?= $studentData['roll_no'] ?>)</h3>
-<p>Class: <?= $studentData['class'] ?></p>
-<p>Total School Days till now: <?= $totalSchoolDays ?>, Present Days: <?= $totalPresentDays ?></p>
+<div class="stats-grid">
+<div class="stat-box">School Days<br><?= $totalSchoolDays ?></div>
+<div class="stat-box">Present Days<br><?= $totalPresentDays ?></div>
+<div class="stat-box">Attendance <br><?= $attendancePercent ?>%</div>
+<div class="stat-box">Result <br><?= $resultsComplete?$percentage.'%':'N/A' ?></div>
+</div>
+</div>
+
+<div style="text-align:center;margin-bottom:20px;">
+<a href="?class=<?= $selectedClass ?>&student_id=<?= $selectedStudent ?>&download_pdf=1">
+</button>
+</a>
 </div>
 
 <?php if($resultsComplete): ?>
 <div class="card">
-<h3>Results</h3>
+<h3>Subject-wise Results</h3>
 <table>
-<tr><?php foreach($subjects as $sub): ?><th><?= $sub ?></th><?php endforeach; ?><th>Total</th><th>Percentage</th></tr>
-<tr><?php foreach($subjects as $sub): ?><td <?= ($resultsData[$sub]<40)?'class="fail"':'' ?>><?= $resultsData[$sub] ?></td><?php endforeach; ?>
+<tr>
+<?php foreach($subjects as $s): ?><th><?= $s ?></th><?php endforeach; ?>
+<th>Total</th><th>%</th>
+</tr>
+<tr>
+<?php foreach($subjects as $s): ?>
+<td class="<?= ($resultsData[$s]<40)?'fail':'' ?>"><?= $resultsData[$s] ?></td>
+<?php endforeach; ?>
 <td><?= $totalMarks ?></td>
 <td><?= $percentage ?>%</td>
 </tr>
 </table>
 </div>
-
-<div class="cards-container">
-    <?php if($resultsComplete): ?>
-    <div class="chart-card">
-        <h3>Marks Chart</h3>
-        <canvas id="marksChart"></canvas>
-    </div>
-    <?php endif; ?>
-
-    <?php if($attendanceComplete): ?>
-    <div class="chart-card">
-        <h3>Attendance Overview</h3>
-        <canvas id="attendanceChart"></canvas>
-    </div>
-    <?php endif; ?>
-</div>
+<?php endif; ?>
 
 <div class="card scrollable">
 <h3>Monthly Attendance</h3>
 <table>
-<tr><th>Month</th><th>Total Days</th><th>Present Days</th><th>Absent Days</th></tr>
-<?php foreach($monthlyAttendance as $month=>$m): ?>
+<tr><th>Month</th><th>Total</th><th>Present</th><th>Absent</th></tr>
+<?php foreach($monthlyAttendance as $m=>$v): ?>
 <tr>
-<td><?= $month ?></td>
-<td><?= $m['total_days'] ?></td>
-<td><?= $m['present_days'] ?></td>
-<td><?= $m['total_days'] - $m['present_days'] ?></td>
+<td><?= $m ?></td>
+<td><?= $v['total_days'] ?></td>
+<td><?= $v['present_days'] ?></td>
+<td><?= $v['total_days']-$v['present_days'] ?></td>
 </tr>
 <?php endforeach; ?>
 </table>
@@ -213,46 +401,60 @@ canvas{
 <h3>Daily Attendance (<?= $currentMonth ?>)</h3>
 <table>
 <tr><th>Date</th><th>Status</th></tr>
-<?php foreach($dailyAttendance as $da): ?>
+<?php foreach($dailyAttendance as $d): ?>
 <tr>
-<td><?= $da['date'] ?></td>
-<td <?= ($da['status']=='Absent')?'class="fail"':'' ?>><?= $da['status'] ?></td>
+<td><?= $d['date'] ?></td>
+<td class="<?= ($d['status']=='Absent')?'fail':'' ?>"><?= $d['status'] ?></td>
 </tr>
 <?php endforeach; ?>
 </table>
 </div>
+
+<div class="charts-grid">
+<div class="card chart-box">
+<h3>Marks Chart</h3>
+<canvas id="marksChart"></canvas>
+</div>
+
+<div class="card chart-box">
+<h3>Attendance Chart</h3>
+<canvas id="attendanceChart"></canvas>
+</div>
+</div>
+
+<?php if(!empty($feedback)): ?>
+<div class="card">
+<h3> Feedback</h3>
+<ul><?php foreach($feedback as $f): ?><li><?= $f ?></li><?php endforeach; ?></ul>
+</div>
 <?php endif; ?>
+
+<?php endif; ?>
+</div>
 
 <script>
 <?php if($resultsComplete): ?>
-const marksCtx = document.getElementById('marksChart').getContext('2d');
-new Chart(marksCtx,{
-    type:'bar',
-    data:{
-        labels: <?= json_encode($subjects) ?>,
-        datasets:[{label:'Marks',data: <?= json_encode(array_values($resultsData)) ?>,backgroundColor:'#2196F3'}]
-    },
-    options:{scales:{y:{beginAtZero:true,max:100}}}
+new Chart(marksChart,{
+ type:'bar',
+ data:{labels:<?= json_encode($subjects) ?>,
+ datasets:[{data:<?= json_encode(array_values($resultsData)) ?>,backgroundColor:'#d32f2f'}]},
+ options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true,max:100}}}
 });
 <?php endif; ?>
 
 <?php if($attendanceComplete):
-$lastMonthData = array_values(array_slice($monthlyAttendance, -1))[0] ?? ['total_days'=>0,'present_days'=>0];
-$absentDays = $lastMonthData['total_days'] - $lastMonthData['present_days'];
+$last=array_values($monthlyAttendance)[0];
+$abs=$last['total_days']-$last['present_days'];
 ?>
-const attCtx = document.getElementById('attendanceChart').getContext('2d');
-new Chart(attCtx, {
-    type:'pie',
-    data:{
-        labels:['Present','Absent'],
-        datasets:[{data:[<?= $lastMonthData['present_days'] ?>, <?= $absentDays ?>],backgroundColor:['#4CAF50','#F44336']}]
-    },
-    options:{responsive:true, plugins:{legend:{position:'bottom'}}}
+new Chart(attendanceChart,{
+ type:'pie',
+ data:{labels:['Present','Absent'],
+ datasets:[{data:[<?= $last['present_days'] ?>,<?= $abs ?>],
+ backgroundColor:['#388e3c','#d32f2f']}]},
+ options:{maintainAspectRatio:false}
 });
 <?php endif; ?>
 </script>
 
-<?php endif; ?>
-</div>
 </body>
 </html>
