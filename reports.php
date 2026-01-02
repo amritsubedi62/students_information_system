@@ -302,7 +302,7 @@ canvas{width:100%!important;height:260px!important}
 </head>
 
 <body>
-
+<a href="homepage.php" style="position:absolute; top:15px; left:15px; font-size:24px; text-decoration:none; color:white;">←</a>
 <?php include "includes/navbar.php"; ?>
 
 <div class="container">
