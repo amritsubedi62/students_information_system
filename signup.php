@@ -55,32 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (mysqli_num_rows($check_result) > 0) {
             $errors['username'] = "Username or email already exists!";
         } else {
-            $roll_check = "SELECT * FROM students WHERE class='$class' AND roll_no='$roll_no'";
-            $roll_result = mysqli_query($conn, $roll_check);
-            if (mysqli_num_rows($roll_result) > 0) {
-                $errors['roll_no'] = "Roll number exists in class $class!";
+            // Only insert into users table, do NOT insert into students table
+            $hashedPassword = customHash($password, $username);
+            $sql = "INSERT INTO users (username, email, password, role, child_name, child_class, child_roll_no) 
+                VALUES ('$username', '$email', '$hashedPassword', 'parent', '$child_name', '$class', '$roll_no')";
+
+            if (mysqli_query($conn, $sql)) {
+                $message = "Signup successful! You can now login.";
+                // Reset form fields
+                $username = $email = $password = $child_name = $class = $roll_no = "";
             } else {
-                $hashedPassword = customHash($password, $username);
-                $sql = "INSERT INTO users (username, email, password, role) VALUES ('$username', '$email', '$hashedPassword', 'parent')";
-                if (mysqli_query($conn, $sql)) {
-                    $user_id = mysqli_insert_id($conn);
-                    $sql2 = "INSERT INTO students (parent_id, name, class, roll_no) 
-                             VALUES ('$user_id', '$child_name', '$class', '$roll_no')";
-                    if (mysqli_query($conn, $sql2)) {
-                        $message = "Signup successful! You can now login.";
-                        // Reset form fields after successful signup
-                        $username = $email = $password = $child_name = $class = $roll_no = "";
-                    } else {
-                        $message = "Error adding student: " . mysqli_error($conn);
-                    }
-                } else {
-                    $message = "Error creating account: " . mysqli_error($conn);
-                }
+                $message = "Error creating account: " . mysqli_error($conn);
             }
         }
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
