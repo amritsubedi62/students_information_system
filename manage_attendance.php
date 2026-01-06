@@ -20,7 +20,7 @@ if ($class != '') {
         $students[] = $row;
     }
 
-    // Quick Sort function
+    // Quick Sort algorIthm
 function quickSort(&$arr, $low, $high) {
     if ($low < $high) {
         $pi = partition($arr, $low, $high); // Partition the array and get pivot index

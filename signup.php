@@ -41,8 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif (strlen($password) < 6) $errors['password'] = "Min 6 characters.";
 
     if (empty($child_name)) $errors['child_name'] = "Child name is required.";
-    elseif (!preg_match('/^[a-zA-Z ]+$/', $child_name)) $errors['child_name'] = "Letters and spaces only.";
-
+    elseif (!preg_match('/^[A-Za-z]{2,}(?:\s[A-Za-z]{2,})+$/', $child_name) || strlen($child_name) < 7) {
+      $errors['child_name'] = "Enter full name (min 2 words, letters only, min 7 chars).";
+  }
     if (empty($class)) $errors['class'] = "Class is required.";
     elseif (!is_numeric($class) || $class < 1 || $class > 10) $errors['class'] = "Class must be 1-10.";
 
@@ -55,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (mysqli_num_rows($check_result) > 0) {
             $errors['username'] = "Username or email already exists!";
         } else {
-            // Only insert into users table, do NOT insert into students table
             $hashedPassword = customHash($password, $username);
             $sql = "INSERT INTO users (username, email, password, role, child_name, child_class, child_roll_no) 
                 VALUES ('$username', '$email', '$hashedPassword', 'parent', '$child_name', '$class', '$roll_no')";
@@ -199,7 +199,6 @@ username.addEventListener('input', () => {
     const regex = /^[a-zA-Z0-9_]{3,20}$/;
     document.getElementById('usernameError').textContent = regex.test(val) ? '' : '3-20 chars, letters/numbers/_ only.';
 });
-
 email.addEventListener('input', () => {
     const val = email.value;
     document.getElementById('emailError').textContent = val.includes('@') && val.includes('.') ? '' : 'Invalid email format.';
@@ -210,10 +209,23 @@ password.addEventListener('input', () => {
 });
 
 childName.addEventListener('input', () => {
-    const val = childName.value;
-    const regex = /^[a-zA-Z ]+$/;
-    document.getElementById('childNameError').textContent = regex.test(val) ? '' : 'Letters and spaces only.';
+    const val = childName.value.trim();
+
+    const fullNameRegex = /^[A-Za-z]{2,}(?:\s[A-Za-z]{2,})+$/;
+
+    if (!fullNameRegex.test(val)) {
+        document.getElementById('childNameError').textContent =
+            'Enter full name (at least 2 words, letters only).';
+    } 
+    else if (val.length < 7) {
+        document.getElementById('childNameError').textContent =
+            'Full name must be at least 7 characters.';
+    } 
+    else {
+        document.getElementById('childNameError').textContent = '';
+    }
 });
+
 
 classInput.addEventListener('input', () => {
     const val = parseInt(classInput.value);

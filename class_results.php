@@ -42,14 +42,13 @@ $subjects = ['Math','Science','Social','English','Nepali'];
 <div class="content">
 <h2 style="text-align:center;">Class Results & Ranking</h2>
 
-<!-- CENTER SEARCH SECTION -->
 <div class="center-search">
 <form method="POST">
 <select name="class" onchange="this.form.submit()" required>
 <option value="">Select Class</option>
 <?php
 for ($i=1;$i<=10;$i++) {
-    $sel = ($selectedClass==$i) ? "selected":"";
+    $sel = ($selectedClass==$i) ? "selected":""; 
     echo "<option value='$i' $sel>Class $i</option>";
 }
 ?>
@@ -101,19 +100,64 @@ while ($s = mysqli_fetch_assoc($students)) {
     ];
 }
 
-usort($data, function($a,$b){
-    if ($a['complete'] && !$a['fail'] && $b['complete'] && !$b['fail']) {
-        return $b['total'] <=> $a['total'];
-    }
-    if ($a['fail'] && !$b['fail']) return 1;
-    if (!$a['fail'] && $b['fail']) return -1;
-    return $b['total'] <=> $a['total'];
-});
 
-$rank = 1;
+function smartAssignRanks($data) {
+    $passList = [];
+    $failList = [];
+
+    // Split pass and fail students
+    foreach ($data as $d) {
+        if ($d['complete'] && !$d['fail']) {
+            $passList[] = $d;
+        } else {
+            $failList[] = $d;
+        }
+    }
+
+    // Sort passing students by total marks descending
+    for ($i = 0; $i < count($passList) - 1; $i++) {
+        for ($j = $i + 1; $j < count($passList); $j++) {
+            if ($passList[$j]['total'] > $passList[$i]['total']) {
+                $temp = $passList[$i];
+                $passList[$i] = $passList[$j];
+                $passList[$j] = $temp;
+            }
+        }
+    }
+
+    $rank = 1;
+    $prevTotal = null;
+    $sameRankCount = 0;
+
+    foreach ($passList as $k => &$d) {
+        if ($prevTotal === $d['total']) {
+            $d['rank'] = $rank;  
+            $sameRankCount++;
+        } else {
+            $rank += $sameRankCount;
+            $d['rank'] = $rank;
+            $sameRankCount = 1;
+        }
+        $prevTotal = $d['total'];
+    }
+    unset($d);
+
+    foreach ($failList as &$d) {
+        $d['rank'] = '-';
+    }
+    unset($d);
+
+    $finalList = [];
+    foreach ($passList as $d) $finalList[] = $d;
+    foreach ($failList as $d) $finalList[] = $d;
+
+    return $finalList;
+}
+
+
+$data = smartAssignRanks($data);
 ?>
 
-<!-- FULL WIDTH TABLE -->
 <div class="full-table">
 <table>
 <tr>
@@ -127,13 +171,13 @@ $rank = 1;
 
 <?php foreach ($data as $d): ?>
 <tr>
-<td><?= ($d['complete'] && !$d['fail']) ? $rank++ : '-' ?></td>
+<td><?= $d['rank'] ?></td>
 <td><?= $d['student']['roll_no'] ?></td>
 <td><?= $d['student']['name'] ?></td>
 
 <?php foreach ($subjects as $sub):
     $m = $d['marks'][$sub];
-    $cls = ($m!==null && $m<40) ? "fail":"";
+    $cls = ($m!==null && $m<40) ? "fail":""; 
 ?>
 <td class="<?= $cls ?>">
 <?= $m!==null ? $m : '-' ?>

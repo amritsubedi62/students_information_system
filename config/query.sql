@@ -66,22 +66,3 @@ CREATE TABLE IF NOT EXISTS attendance (
 );
 
 
--- ==========================
--- PERFORMANCE TABLE (optional, for future use)
--- ==========================
-CREATE TABLE IF NOT EXISTS performance (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    remarks TEXT,
-    rating INT CHECK (rating BETWEEN 1 AND 10),
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-);
-
--- ==========================
--- Some sample data (optional)
--- ==========================
-INSERT INTO students (name, class, roll_no)
-VALUES 
-('Ramesh Karki', '10', '1'),
-('Sita Shrestha', '9', '5'),
-('Aarav Adhikari', '10', '2');
