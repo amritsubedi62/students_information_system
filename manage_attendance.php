@@ -240,7 +240,10 @@ button:hover {
         ?>
     </select>
 
-    <input type="month" name="month" required>
+    <?php
+    $maxMonth = date('Y-m', strtotime('-1 month')); // Last month
+    ?>
+    <input type="month" name="month" required max="<?= $maxMonth ?>">
     <input type="number" name="total_days" placeholder="Total School Days" required>
     <input type="number" name="present_days" placeholder="Total Present Days" required>
 
