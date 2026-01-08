@@ -7,8 +7,29 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
 
 include "config/db.php";
 
-$selectedClass = $_POST['class'] ?? '';
+$teacher_id = $_SESSION['user_id'];
+
 $subjects = ['Math','Science','Social','English','Nepali'];
+
+/* ===============================
+   CLASS CONTEXT (RESTRICTED)
+================================ */
+$selectedClass = $_POST['class'] ?? '';
+
+if ($selectedClass !== '') {
+    $selectedClass = intval($selectedClass);
+
+    // verify teacher is assigned to this class
+    $chk = mysqli_query($conn,
+        "SELECT * FROM teacher_class 
+         WHERE teacher_id='$teacher_id' 
+         AND class='$selectedClass'"
+    );
+
+    if (mysqli_num_rows($chk) == 0) {
+        die("Unauthorized class access.");
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -36,22 +57,36 @@ $subjects = ['Math','Science','Social','English','Nepali'];
 
 <body>
 
-<a href="homepage.php" style="position:absolute; top:15px; left:15px; font-size:24px; text-decoration:none; color:white;">←</a>
+<a href="homepage.php"
+   style="position:absolute; top:15px; left:15px;
+          font-size:24px; text-decoration:none; color:white;">←</a>
+
 <?php include "includes/navbar.php"; ?>
 
 <div class="content">
 <h2 style="text-align:center;">Class Results & Ranking</h2>
 
+<!-- ================= CLASS SELECT ================= -->
 <div class="center-search">
 <form method="POST">
 <select name="class" onchange="this.form.submit()" required>
 <option value="">Select Class</option>
+
 <?php
-for ($i=1;$i<=10;$i++) {
-    $sel = ($selectedClass==$i) ? "selected":""; 
-    echo "<option value='$i' $sel>Class $i</option>";
+$cls = mysqli_query($conn,
+    "SELECT class FROM teacher_class 
+     WHERE teacher_id='$teacher_id'
+     ORDER BY class"
+);
+
+while ($c = mysqli_fetch_assoc($cls)) {
+    $sel = ($selectedClass == $c['class']) ? "selected" : "";
+    echo "<option value='{$c['class']}' $sel>
+            Class {$c['class']}
+          </option>";
 }
 ?>
+
 </select>
 </form>
 </div>
@@ -60,7 +95,9 @@ for ($i=1;$i<=10;$i++) {
 if ($selectedClass):
 
 $students = mysqli_query($conn,
-    "SELECT * FROM students WHERE class='$selectedClass' ORDER BY roll_no"
+    "SELECT * FROM students 
+     WHERE class='$selectedClass' 
+     ORDER BY roll_no"
 );
 
 $data = [];
@@ -75,7 +112,8 @@ while ($s = mysqli_fetch_assoc($students)) {
     foreach ($subjects as $sub) {
         $q = mysqli_query($conn,
             "SELECT marks FROM results 
-             WHERE student_id='{$s['id']}' AND subject='$sub'"
+             WHERE student_id='{$s['id']}' 
+             AND subject='$sub'"
         );
         if ($r = mysqli_fetch_assoc($q)) {
             $marks = $r['marks'];
@@ -88,24 +126,25 @@ while ($s = mysqli_fetch_assoc($students)) {
         }
     }
 
-    $percentage = ($count==5) ? round(($total/500)*100,2) : null;
+    $percentage = ($count == 5)
+        ? round(($total / 500) * 100, 2)
+        : null;
 
     $data[] = [
-        'student'=>$s,
-        'marks'=>$marksArr,
-        'total'=>$total,
-        'percentage'=>$percentage,
-        'fail'=>$fail,
-        'complete'=>($count==5)
+        'student'    => $s,
+        'marks'      => $marksArr,
+        'total'      => $total,
+        'percentage' => $percentage,
+        'fail'       => $fail,
+        'complete'   => ($count == 5)
     ];
 }
 
-
+/* ================= RANK LOGIC (UNCHANGED) ================= */
 function smartAssignRanks($data) {
     $passList = [];
     $failList = [];
 
-    // Split pass and fail students
     foreach ($data as $d) {
         if ($d['complete'] && !$d['fail']) {
             $passList[] = $d;
@@ -114,13 +153,12 @@ function smartAssignRanks($data) {
         }
     }
 
-    // Sort passing students by total marks descending
     for ($i = 0; $i < count($passList) - 1; $i++) {
         for ($j = $i + 1; $j < count($passList); $j++) {
             if ($passList[$j]['total'] > $passList[$i]['total']) {
-                $temp = $passList[$i];
+                $tmp = $passList[$i];
                 $passList[$i] = $passList[$j];
-                $passList[$j] = $temp;
+                $passList[$j] = $tmp;
             }
         }
     }
@@ -129,9 +167,9 @@ function smartAssignRanks($data) {
     $prevTotal = null;
     $sameRankCount = 0;
 
-    foreach ($passList as $k => &$d) {
+    foreach ($passList as &$d) {
         if ($prevTotal === $d['total']) {
-            $d['rank'] = $rank;  
+            $d['rank'] = $rank;
             $sameRankCount++;
         } else {
             $rank += $sameRankCount;
@@ -147,17 +185,13 @@ function smartAssignRanks($data) {
     }
     unset($d);
 
-    $finalList = [];
-    foreach ($passList as $d) $finalList[] = $d;
-    foreach ($failList as $d) $finalList[] = $d;
-
-    return $finalList;
+    return array_merge($passList, $failList);
 }
-
 
 $data = smartAssignRanks($data);
 ?>
 
+<!-- ================= RESULT TABLE ================= -->
 <div class="full-table">
 <table>
 <tr>
@@ -177,10 +211,10 @@ $data = smartAssignRanks($data);
 
 <?php foreach ($subjects as $sub):
     $m = $d['marks'][$sub];
-    $cls = ($m!==null && $m<40) ? "fail":""; 
+    $cls = ($m !== null && $m < 40) ? "fail" : "";
 ?>
 <td class="<?= $cls ?>">
-<?= $m!==null ? $m : '-' ?>
+<?= $m !== null ? $m : '-' ?>
 </td>
 <?php endforeach; ?>
 

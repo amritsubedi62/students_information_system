@@ -35,15 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $hashedEnteredPassword = customHash($password, $row['username']);
 
             if ($hashedEnteredPassword == $row['password']) {
+                // Set session variables
                 $_SESSION['user_id'] = $row['id'];
                 $_SESSION['role'] = $row['role'];
                 $_SESSION['username'] = $row['username'];
 
-                if ($row['role'] == 'teacher') {
-                    header("Location: homepage.php");
+                // REDIRECT BASED ON ROLE
+                if ($row['role'] === 'admin') {
+                    header("Location: admin_dashboard.php");
+                } elseif ($row['role'] === 'teacher') {
+                    header("Location: homepage.php"); // teacher dashboard
+                } elseif ($row['role'] === 'parent') {
+                    header("Location: parent_home.php"); // parent dashboard
                 } else {
-                    header("Location: parent_home.php");
+                    $message = "Role not recognized!";
                 }
+
                 exit;
             } else {
                 $message = "Invalid password!";
@@ -54,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

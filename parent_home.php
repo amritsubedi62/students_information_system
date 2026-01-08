@@ -9,24 +9,43 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'parent') {
 
 $parent_id = $_SESSION['user_id'];
 
-$user_sql = "SELECT * FROM users WHERE id='$parent_id'";
-$user_result = mysqli_query($conn, $user_sql);
-$user = mysqli_fetch_assoc($user_result);
-
-$child_name = $user['child_name'] ?? '';
-$class = $user['child_class'] ?? '';
-$roll_no = $user['child_roll_no'] ?? '';
-
-$student_sql = "SELECT * FROM students WHERE name='$child_name' AND class='$class' AND roll_no='$roll_no' LIMIT 1";
+// Step 1: Check if parent already has a child linked
+$student_sql = "SELECT * FROM students WHERE parent_id='$parent_id' LIMIT 1";
 $student_result = mysqli_query($conn, $student_sql);
 
-if (mysqli_num_rows($student_result) == 0) {
-    $student = null;
-    $message = "Your child’s data is not present in the system. Please check your details or contact school administration.";
-} else {
+if(mysqli_num_rows($student_result) > 0){
     $student = mysqli_fetch_assoc($student_result);
     $student_id = $student['id'];
+    $child_linked = true;
+} else {
+    $student = null;
+    $child_linked = false;
+}
 
+// Step 2: Handle linking form submission
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['link_child'])){
+    $child_name = trim(mysqli_real_escape_string($conn,$_POST['child_name']));
+    $child_class = trim(mysqli_real_escape_string($conn,$_POST['child_class']));
+    $child_roll = trim(mysqli_real_escape_string($conn,$_POST['child_roll']));
+
+    $find_sql = "SELECT * FROM students WHERE name='$child_name' AND class='$child_class' AND roll_no='$child_roll' LIMIT 1";
+    $find_result = mysqli_query($conn, $find_sql);
+
+    if(mysqli_num_rows($find_result) == 1){
+        $student = mysqli_fetch_assoc($find_result);
+        $student_id = $student['id'];
+
+        // Link parent_id
+        mysqli_query($conn, "UPDATE students SET parent_id='$parent_id' WHERE id='$student_id'");
+        $child_linked = true;
+        $message = "Child linked successfully!";
+    } else {
+        $message = "Student not found. Please check details or contact school administration.";
+    }
+}
+
+// If child is linked, keep the current report logic
+if($child_linked && $student){
     $subjects = ['Math','Science','Social','English','Nepali'];
     $resultsData = [];
     $feedback = [];
@@ -276,7 +295,6 @@ canvas {
     background: #b71c1c;
 }
 </style>
-
 </head>
 <body>
 
@@ -285,11 +303,23 @@ canvas {
 
 <?php if($message): ?><div class="alert"><?= $message ?></div><?php endif; ?>
 
-<?php if($student): ?>
+<?php if(!$child_linked): ?>
+<div class="card">
+<h3>Link Your Child</h3>
+<form method="POST">
+    <input type="text" name="child_name" placeholder="Child Name" required>
+    <input type="text" name="child_class" placeholder="Class (1-10)" required>
+    <input type="text" name="child_roll" placeholder="Roll Number" required>
+    <button type="submit" name="link_child">Link Child</button>
+</form>
+</div>
+<?php endif; ?>
+
+<?php if($child_linked && $student): ?>
 <a href="?download_pdf=1" class="download-btn">⬇ Download PDF</a>
 
 <div class="card">
-<h3><?= $student['name'] ?> (Roll <?= $student['roll_no'] ?>)</h3>
+<h3><?= htmlspecialchars($student['name']) ?> (Roll <?= $student['roll_no'] ?>)</h3>
 <div class="stats-grid">
 <div class="stat-box">School Days<br><?= $totalSchoolDays ?></div>
 <div class="stat-box">Present Days<br><?= $totalPresentDays ?></div>

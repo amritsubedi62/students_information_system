@@ -87,7 +87,7 @@ body {
   <p>Manage student records, attendance, and performance efficiently.</p>
   
   <button onclick="window.location.href='login.php'">Login</button>
-  <button onclick="window.location.href='signup.php'">Signup (Parents)</button>
+  <button onclick="window.location.href='signup.php'">Signup </button>
 </div>
 </body>
 </html>
