@@ -14,15 +14,12 @@ if ($conn->connect_error) {
 $teacher_id = $_SESSION['user_id'];
 $today = date('Y-m-d');
 
-/* ===============================
-   CLASS CONTEXT (IMPORTANT)
-================================ */
+/* ================= DAILY ================= */
 $class = $_POST['class'] ?? $_GET['class'] ?? '';
 
 if ($class !== '') {
     $class = intval($class);
 
-    // Verify teacher is assigned to this class
     $check = $conn->query("
         SELECT * FROM teacher_class
         WHERE teacher_id='$teacher_id'
@@ -34,47 +31,107 @@ if ($class !== '') {
     }
 }
 
-/* ===============================
-   FETCH STUDENTS OF THIS CLASS
-================================ */
+/* ================= DAILY STUDENTS ================= */
 $students = [];
+
 if ($class != '') {
-    $res = $conn->query("SELECT * FROM students WHERE class='$class'");
+    $res = $conn->query("
+        SELECT * FROM students 
+        WHERE class='$class'
+        ORDER BY roll_no
+    ");
+
     while ($row = $res->fetch_assoc()) {
         $students[] = $row;
     }
+}
 
-    /* ===== Quick Sort by roll_no (UNCHANGED) ===== */
-    function quickSort(&$arr, $low, $high) {
-        if ($low < $high) {
-            $pi = partition($arr, $low, $high);
-            quickSort($arr, $low, $pi - 1);
-            quickSort($arr, $pi + 1, $high);
-        }
+/* ===================================================
+   MONTHLY ATTENDANCE - CLEAN LOGIC (FIXED)
+   =================================================== */
+
+$monthly_class = $_POST['monthly_class'] ?? '';
+$student_id    = $_POST['student_id'] ?? '';
+$month         = $_POST['month'] ?? '';
+$total_days    = $_POST['total_days'] ?? '';
+$present_days  = $_POST['present_days'] ?? '';
+
+/* STEP 1: ONLY LOAD MODE (class selected) */
+$isLoad = !empty($monthly_class) && empty($student_id);
+
+/* STEP 2: ONLY SAVE MODE (all fields exist) */
+$isSave = !empty($student_id) && !empty($month) && !empty($total_days) && !empty($present_days);
+
+/* ================= LOAD STUDENTS ================= */
+$monthly_students = [];
+
+if ($isLoad) {
+    $monthly_class = intval($monthly_class);
+
+    $res = $conn->query("
+        SELECT id, name, roll_no 
+        FROM students 
+        WHERE class='$monthly_class'
+        ORDER BY roll_no
+    ");
+
+    while ($row = $res->fetch_assoc()) {
+        $monthly_students[] = $row;
+    }
+}
+
+/* ================= SAVE MONTHLY ATTENDANCE ================= */
+if ($isSave) {
+
+    $student_id   = intval($student_id);
+    $total_days   = intval($total_days);
+    $present_days = intval($present_days);
+
+    /* VALIDATIONS */
+    if ($student_id <= 0 || empty($month)) {
+        die("Invalid data.");
     }
 
-    function partition(&$arr, $low, $high) {
-        $pivot = $arr[$high]['roll_no'];
-        $i = $low - 1;
-
-        for ($j = $low; $j < $high; $j++) {
-            if ($arr[$j]['roll_no'] < $pivot) {
-                $i++;
-                $temp = $arr[$i];
-                $arr[$i] = $arr[$j];
-                $arr[$j] = $temp;
-            }
-        }
-
-        $temp = $arr[$i + 1];
-        $arr[$i + 1] = $arr[$high];
-        $arr[$high] = $temp;
-
-        return $i + 1;
+    if ($total_days < 1 || $total_days > 31) {
+        die("Total days must be between 1 and 31.");
     }
 
-    if (count($students) > 0) {
-        quickSort($students, 0, count($students) - 1);
+    if ($present_days < 0 || $present_days > $total_days) {
+        die("Present days cannot be greater than total days.");
+    }
+
+    $maxMonth = date('Y-m', strtotime('-1 month'));
+    if ($month > $maxMonth) {
+        die("You can only add past months.");
+    }
+
+    /* DUPLICATE CHECK */
+    $check = $conn->prepare("
+        SELECT id FROM attendance_monthly 
+        WHERE student_id=? AND month=?
+    ");
+    $check->bind_param("is", $student_id, $month);
+    $check->execute();
+    $result = $check->get_result();
+
+    if ($result->num_rows > 0) {
+        die("Monthly attendance already exists.");
+    }
+
+    /* INSERT */
+    $insert = $conn->prepare("
+        INSERT INTO attendance_monthly 
+        (student_id, month, total_days, present_days)
+        VALUES (?, ?, ?, ?)
+    ");
+
+    $insert->bind_param("isii", $student_id, $month, $total_days, $present_days);
+
+    if ($insert->execute()) {
+        header("Location: manage_attendance.php?success=1");
+        exit;
+    } else {
+        die("Database error: " . $conn->error);
     }
 }
 ?>
@@ -87,63 +144,41 @@ if ($class != '') {
 </head>
 
 <style>
-/* === UNCHANGED STYLES === */
 body { margin:0; padding:0; background:#f2f3f5; }
-h2 { text-align:center; margin:20px 0; font-weight:600; }
-.main-container { width:95%; margin:auto; display:flex; gap:30px; justify-content:center; }
-.card { background:#fff; width:45%; padding:25px; border-radius:12px;
-        box-shadow:0 8px 25px rgba(0,0,0,0.08); }
-.card h3 { color:#e53935; text-align:center; }
-.card p { text-align:center; color:#777; font-size:14px; }
-input, select { width:100%; padding:10px; margin-bottom:15px;
-                border-radius:6px; border:1px solid #ccc; }
+h2 { text-align:center; margin:20px 0; }
+.main-container { width:95%; margin:auto; display:flex; gap:30px; }
+.card { background:#fff; width:45%; padding:25px; border-radius:12px; }
+input, select { width:100%; padding:10px; margin-bottom:15px; }
 table { width:100%; border-collapse:collapse; }
-th { background:#f5f5f5; padding:10px; }
-td { padding:10px; text-align:center; border-bottom:1px solid #eee; }
-button { width:100%; background:#e53935; color:#fff; padding:12px;
-         border:none; border-radius:6px; font-size:15px; cursor:pointer; }
-button:hover { background:#c62828; }
-@media(max-width:900px) {
-    .main-container { flex-direction:column; }
-    .card { width:90%; }
-}
+th, td { padding:10px; text-align:center; }
+button { width:100%; padding:12px; background:#e53935; color:#fff; border:none; }
 </style>
 
 <body>
-
-<a href="homepage.php"
-   style="position:absolute; top:15px; left:15px;
-          font-size:24px; text-decoration:none; color:white;">←</a>
 
 <?php include "includes/navbar.php"; ?>
 
 <div class="content">
 <h2>Manage Attendance</h2>
 
+<!-- ================= DAILY ATTENDANCE ================= -->
 <form method="post" action="save_attendance.php">
 
 <div class="main-container">
 
-<!-- ================= ATTENDANCE DETAILS ================= -->
 <div class="card">
     <h3>Attendance Details</h3>
 
-    <input type="date"
-           name="attendance_date"
-           value="<?= $today ?>"
-           min="<?= $today ?>"
-           max="<?= $today ?>"
-           required>
+    <input type="date" name="attendance_date" value="<?= $today ?>" required>
 
-    <!-- CLASS SELECT (ONLY ASSIGNED CLASSES) -->
     <select name="class" required>
         <option value="">-- Select Class --</option>
         <?php
         $cls = $conn->query("
             SELECT class FROM teacher_class
             WHERE teacher_id='$teacher_id'
-            ORDER BY class DESC
         ");
+
         while ($c = $cls->fetch_assoc()) {
             $selected = ($class == $c['class']) ? "selected" : "";
             echo "<option value='{$c['class']}' $selected>
@@ -158,7 +193,6 @@ button:hover { background:#c62828; }
     </button>
 </div>
 
-<!-- ================= STUDENT LIST ================= -->
 <div class="card">
     <h3>Student Attendance</h3>
 
@@ -175,22 +209,17 @@ button:hover { background:#c62828; }
             <td><?= $s['roll_no'] ?></td>
             <td><?= $s['name'] ?></td>
             <td>
-                <input type="radio"
-                       name="status[<?= $s['id'] ?>]"
-                       value="Present" checked> Present
-                <input type="radio"
-                       name="status[<?= $s['id'] ?>]"
-                       value="Absent"> Absent
+                <input type="radio" name="status[<?= $s['id'] ?>]" value="Present" checked> Present
+                <input type="radio" name="status[<?= $s['id'] ?>]" value="Absent"> Absent
             </td>
         </tr>
         <?php } ?>
     </table>
 
-    <br>
     <button type="submit">Save Daily Attendance</button>
 
     <?php } else { ?>
-        <p>Please select a class to view students</p>
+        <p>Please select a class</p>
     <?php } ?>
 </div>
 
@@ -198,36 +227,49 @@ button:hover { background:#c62828; }
 </form>
 
 <!-- ================= MONTHLY ATTENDANCE ================= -->
-<form method="post" action="save_monthly_attendance.php">
+<form method="post" action="manage_attendance.php">
 
-<div class="main-container" style="margin-top:30px;">
+<div class="main-container" style="margin-top:40px;">
+
 <div class="card">
 
 <h3>Monthly Attendance</h3>
-<p>Enter total attendance per student</p>
 
-<select name="student_id" required>
-    <option value="">-- Select Student --</option>
+<!-- CLASS SELECT -->
+<select name="monthly_class" required onchange="this.form.submit()">
+    <option value="">-- Select Class --</option>
     <?php
-    if ($class != '') {
-        $all = $conn->query("
-            SELECT * FROM students
-            WHERE class='$class'
-            ORDER BY roll_no
-        ");
-        while ($st = $all->fetch_assoc()) {
-            echo "<option value='{$st['id']}'>
-                    {$st['name']} (Roll {$st['roll_no']})
-                  </option>";
-        }
+    $cls2 = $conn->query("
+        SELECT class FROM teacher_class
+        WHERE teacher_id='$teacher_id'
+    ");
+
+    while ($c = $cls2->fetch_assoc()) {
+        $selected = ($monthly_class == $c['class']) ? "selected" : "";
+        echo "<option value='{$c['class']}' $selected>
+                Class {$c['class']}
+              </option>";
     }
     ?>
 </select>
 
+<!-- STUDENT LIST -->
+<select name="student_id" required>
+    <option value="">-- Select Student --</option>
+    <?php foreach ($monthly_students as $st) { ?>
+        <option value="<?= $st['id'] ?>">
+            <?= $st['name'] ?> (Roll <?= $st['roll_no'] ?>)
+        </option>
+    <?php } ?>
+</select>
+
 <?php $maxMonth = date('Y-m', strtotime('-1 month')); ?>
+
 <input type="month" name="month" required max="<?= $maxMonth ?>">
-<input type="number" name="total_days" placeholder="Total School Days" required>
-<input type="number" name="present_days" placeholder="Total Present Days" required>
+
+<input type="number" name="total_days" placeholder="Total Days" min="1" max="31" required>
+
+<input type="number" name="present_days" placeholder="Present Days" min="0" required>
 
 <button type="submit">Save Monthly Attendance</button>
 
@@ -236,5 +278,6 @@ button:hover { background:#c62828; }
 </form>
 
 </div>
+
 </body>
 </html>

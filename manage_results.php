@@ -11,16 +11,12 @@ $teacher_id = $_SESSION['user_id'];
 
 $allowedSubjects = ['Math','Science','Social','English','Nepali'];
 
-/* ===============================
-   CLASS CONTEXT (SAME PATTERN)
-================================ */
 $selectedClass   = $_GET['class'] ?? $_POST['class'] ?? '';
 $selectedStudent = $_GET['student_id'] ?? $_POST['student_id'] ?? '';
 
 if ($selectedClass !== '') {
     $selectedClass = intval($selectedClass);
 
-    // Verify teacher is assigned to this class
     $checkClass = mysqli_query($conn,
         "SELECT * FROM teacher_class 
          WHERE teacher_id='$teacher_id' 
@@ -35,9 +31,6 @@ if ($selectedClass !== '') {
 $message = '';
 $editData = null;
 
-/* ===============================
-   EDIT RESULT (SECURE)
-================================ */
 if (isset($_GET['edit'])) {
     $res = mysqli_query($conn,
         "SELECT r.* FROM results r
@@ -48,9 +41,7 @@ if (isset($_GET['edit'])) {
     $editData = mysqli_fetch_assoc($res);
 }
 
-/* ===============================
-   DELETE RESULT (SECURE)
-================================ */
+
 if (isset($_GET['delete'])) {
     mysqli_query($conn,
         "DELETE r FROM results r
@@ -62,9 +53,7 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-/* ===============================
-   SAVE RESULT
-================================ */
+
 if (isset($_POST['save_result'])) {
 
     $student_id = $_POST['student_id'];
@@ -72,7 +61,6 @@ if (isset($_POST['save_result'])) {
     $marks      = $_POST['marks'];
     $id         = $_POST['id'];
 
-    // Ensure student belongs to teacher's class
     $stuCheck = mysqli_query($conn,
         "SELECT * FROM students 
          WHERE id='$student_id' 
@@ -139,7 +127,6 @@ if (isset($_POST['save_result'])) {
 
 <div class="dashboard">
 
-<!-- ================= ADD / UPDATE RESULT ================= -->
 <div class="card">
 <h3><?= $editData ? "Update Result" : "Add Result" ?></h3>
 
@@ -210,7 +197,6 @@ Select a student to add results
 </form>
 </div>
 
-<!-- ================= RESULT LIST ================= -->
 <div class="card" style="width:500px;">
 <h3>Result List</h3>
 

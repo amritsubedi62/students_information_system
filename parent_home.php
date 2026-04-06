@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'parent') {
 
 $parent_id = $_SESSION['user_id'];
 
-// Step 1: Check if parent already has a child linked
 $student_sql = "SELECT * FROM students WHERE parent_id='$parent_id' LIMIT 1";
 $student_result = mysqli_query($conn, $student_sql);
 
@@ -22,7 +21,6 @@ if(mysqli_num_rows($student_result) > 0){
     $child_linked = false;
 }
 
-// Step 2: Handle linking form submission
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['link_child'])){
     $child_name = trim(mysqli_real_escape_string($conn,$_POST['child_name']));
     $child_class = trim(mysqli_real_escape_string($conn,$_POST['child_class']));
@@ -35,7 +33,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['link_child'])){
         $student = mysqli_fetch_assoc($find_result);
         $student_id = $student['id'];
 
-        // Link parent_id
+
         mysqli_query($conn, "UPDATE students SET parent_id='$parent_id' WHERE id='$student_id'");
         $child_linked = true;
         $message = "Child linked successfully!";
@@ -44,7 +42,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['link_child'])){
     }
 }
 
-// If child is linked, keep the current report logic
 if($child_linked && $student){
     $subjects = ['Math','Science','Social','English','Nepali'];
     $resultsData = [];
