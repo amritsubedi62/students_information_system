@@ -89,61 +89,70 @@ body {
   animation: fadeIn 0.8s ease-in;
 }
 
+/* Page fade animation */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* Glass Login Box */
+/* LOGIN BOX */
 .container {
   width: 100%;
   max-width: 400px;
 
   position: relative;
 
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  /* ✅ WHITISH GLASS EFFECT */
+  background: rgba(255, 255, 255, 0.25);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 
   padding: 40px 30px;
   border-radius: 20px;
 
-  border: 1px solid rgba(255,80,80,0.25); /* red hint */
+  border: 1px solid rgba(255, 255, 255, 0.35);
 
   box-shadow: 
-    0 10px 40px rgba(0,0,0,0.4),
-    inset 0 0 15px rgba(255,0,0,0.08);
+    0 10px 40px rgba(0,0,0,0.35),
+    inset 0 0 20px rgba(255,255,255,0.15);
 
   animation: slideUp 0.7s ease;
 }
 
-/* Glow border */
+/* Smooth slide animation */
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Glow border effect */
 .container::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 20px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,80,80,0.2));
+
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,80,80,0.2));
+
   -webkit-mask: 
     linear-gradient(#fff 0 0) content-box, 
     linear-gradient(#fff 0 0);
+
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+
   pointer-events: none;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
+/* Title */
 .container h1 {
   text-align: center;
-  color: #fff;
+  color: #ffffff;
   margin-bottom: 25px;
   font-size: 28px;
-  text-shadow: 0 2px 10px rgba(255,0,0,0.4); /* red glow */
+  text-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
 
 /* Inputs */
@@ -152,30 +161,30 @@ body {
   padding: 12px;
   margin-bottom: 5px;
 
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.35);
   backdrop-filter: blur(10px);
 
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.4);
   border-radius: 8px;
 
-  color: #fff;
+  color: #000;
   font-size: 14px;
 
   transition: all 0.3s ease;
 }
 
 .container form input::placeholder {
-  color: rgba(255,255,255,0.7);
+  color: rgba(0,0,0,0.6);
 }
 
-/* 🔴 focus red accent */
+/* Focus effect */
 .container form input:focus {
   border-color: #ff3b3b;
-  box-shadow: 0 0 10px rgba(255,0,0,0.4);
+  box-shadow: 0 0 10px rgba(255,0,0,0.3);
   outline: none;
 }
 
-/* 🔴 Button (MAIN RED ACCENT) */
+/* Button */
 .container form button {
   width: 100%;
   padding: 12px;
@@ -196,22 +205,23 @@ body {
 
   transition: all 0.3s ease;
 
-  box-shadow: 0 5px 15px rgba(255,0,0,0.4);
+  box-shadow: 0 5px 15px rgba(255,0,0,0.35);
 }
 
 .container form button:hover {
   background: linear-gradient(135deg, #ff5c5c, #d10000);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(255,0,0,0.5);
+  box-shadow: 0 8px 25px rgba(255,0,0,0.45);
 }
 
-/* Links */
+/* Text */
 .container p {
   text-align: center;
   margin-top: 18px;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255,255,255,0.95);
 }
 
+/* Links */
 .container a {
   color: #ff4d4d;
   text-decoration: none;
@@ -222,7 +232,7 @@ body {
   text-decoration: underline;
 }
 
-/* Messages */
+/* Error message */
 .message {
   text-align: center;
   margin-bottom: 15px;
@@ -230,7 +240,7 @@ body {
   font-weight: bold;
 }
 
-/* Error Text */
+/* Field errors */
 .error-msg {
   color: #ff6b6b;
   font-size: 12px;

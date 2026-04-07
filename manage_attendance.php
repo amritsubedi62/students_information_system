@@ -144,7 +144,11 @@ if ($isSave) {
 </head>
 
 <style>
-body { margin:0; padding:0; background:#f2f3f5; }
+body 
+{ margin:0; 
+padding:0; 
+background:#f2f3f5;
+ }
 h2 { text-align:center; margin:20px 0; }
 .main-container { width:95%; margin:auto; display:flex; gap:30px; }
 .card { background:#fff; width:45%; padding:25px; border-radius:12px; }
@@ -226,7 +230,6 @@ button { width:100%; padding:12px; background:#e53935; color:#fff; border:none; 
 </div>
 </form>
 
-<!-- ================= MONTHLY ATTENDANCE ================= -->
 <form method="post" action="manage_attendance.php">
 
 <div class="main-container" style="margin-top:40px;">
@@ -235,7 +238,6 @@ button { width:100%; padding:12px; background:#e53935; color:#fff; border:none; 
 
 <h3>Monthly Attendance</h3>
 
-<!-- CLASS SELECT -->
 <select name="monthly_class" required onchange="this.form.submit()">
     <option value="">-- Select Class --</option>
     <?php

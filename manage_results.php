@@ -115,7 +115,57 @@ if (isset($_POST['save_result'])) {
 </head>
 
 <body>
+<style id="result_form_fix">
+/* ===== FORM SPACING FIX (ADD RESULT FORM) ===== */
 
+.card form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* All inputs + dropdowns spacing */
+.card form select,
+.card form input {
+  width: 100%;
+  padding: 10px 12px;
+
+  margin-bottom: 14px;   /* 👈 MAIN FIX (space between fields) */
+
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  outline: none;
+
+  font-size: 14px;
+}
+
+/* Focus effect */
+.card form select:focus,
+.card form input:focus {
+  border-color: #00c853;
+  box-shadow: 0 0 5px rgba(0,200,83,0.3);
+}
+
+/* Button spacing */
+.card form button {
+  margin-top: 10px;
+  padding: 10px 12px;
+  width: 100%;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #e00404;
+  color: white;
+
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Small improvement for dropdown look */
+.card form select {
+  background: #fff;
+}
+</style>
 <a href="homepage.php"
    style="position:absolute; top:15px; left:15px;
           font-size:24px; text-decoration:none; color:white;">←</a>

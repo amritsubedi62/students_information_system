@@ -4,7 +4,9 @@ include("config/db.php");
 $errors = [];
 $message = "";
 
-// Hashing Algorithm 
+/* =========================
+   HASH FUNCTION
+========================= */
 function customHash($password, $username) {
     $add = "SIS_2025_" . $username;
     $input = $password . $add;
@@ -22,46 +24,91 @@ function customHash($password, $username) {
 
 $username = $email = $password = $role = "";
 
+/* =========================
+   FORM SUBMIT
+========================= */
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
     $username = trim(mysqli_real_escape_string($conn, $_POST['username']));
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
     $password = trim($_POST['password']);
     $role = trim($_POST['role']);
 
-    if (empty($username)) $errors['username'] = "Username is required.";
-    elseif (!preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username)) $errors['username'] = "3-20 chars, letters/numbers/_ only.";
+    /* =========================
+       USERNAME VALIDATION
+       - starts with letter
+       - only letters & numbers
+       - min 3 chars
+    ========================= */
+    if (empty($username)) {
+        $errors['username'] = "Username is required.";
+    }
+    elseif (!preg_match('/^[A-Za-z][A-Za-z0-9]{2,19}$/', $username)) {
+        $errors['username'] = "Start with letter, only letters/numbers, min 3 chars.";
+    }
 
-    if (empty($email)) $errors['email'] = "Email is required.";
-    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = "Invalid email format.";
+    /* =========================
+       EMAIL VALIDATION
+    ========================= */
+    if (empty($email)) {
+        $errors['email'] = "Email is required.";
+    }
+    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = "Invalid email format.";
+    }
 
-    if (empty($password)) $errors['password'] = "Password is required.";
-    elseif (strlen($password) < 6) $errors['password'] = "Min 6 characters.";
+    /* =========================
+       PASSWORD VALIDATION
+    ========================= */
+    if (empty($password)) {
+        $errors['password'] = "Password is required.";
+    }
+    elseif (strlen($password) < 6) {
+        $errors['password'] = "Password must be at least 6 characters.";
+    }
 
-    if (empty($role) || !in_array($role, ['parent','teacher'])) $errors['role'] = "Select a valid role.";
+    /* =========================
+       ROLE VALIDATION
+    ========================= */
+    if (empty($role) || !in_array($role, ['parent','teacher'])) {
+        $errors['role'] = "Select a valid role.";
+    }
 
+    /* =========================
+       DUPLICATE CHECK
+    ========================= */
     if (empty($errors)) {
-        $check_sql = "SELECT * FROM users WHERE username='$username' OR email='$email'";
+
+        $check_sql = "SELECT * FROM users 
+                      WHERE username='$username' OR email='$email' 
+                      LIMIT 1";
         $check_result = mysqli_query($conn, $check_sql);
 
         if (mysqli_num_rows($check_result) > 0) {
-            $errors['username'] = "Username or email already exists!";
+            $errors['username'] = "Username already exists!";
+        }
+    }
+
+    /* =========================
+       INSERT USER
+    ========================= */
+    if (empty($errors)) {
+
+        $hashedPassword = customHash($password, $username);
+
+        if ($role === 'teacher') {
+            $sql = "INSERT INTO users (username, email, password, role, status)
+                    VALUES ('$username', '$email', '$hashedPassword', 'teacher', 'pending')";
         } else {
-            $hashedPassword = customHash($password, $username);
+            $sql = "INSERT INTO users (username, email, password, role, status)
+                    VALUES ('$username', '$email', '$hashedPassword', 'parent', 'approved')";
+        }
 
-            if ($role === 'teacher') {
-                $sql = "INSERT INTO users (username, email, password, role, status) 
-                        VALUES ('$username', '$email', '$hashedPassword', 'teacher', 'pending')";
-            } else {
-                $sql = "INSERT INTO users (username, email, password, role, status) 
-                        VALUES ('$username', '$email', '$hashedPassword', 'parent', 'approved')";
-            }
-
-            if (mysqli_query($conn, $sql)) {
-                $message = "Signup successful! You can now login.";
-                $username = $email = $password = $role = "";
-            } else {
-                $message = "Error creating account: " . mysqli_error($conn);
-            }
+        if (mysqli_query($conn, $sql)) {
+            $message = "Signup successful! You can now login.";
+            $username = $email = $password = $role = "";
+        } else {
+            $message = "Error: " . mysqli_error($conn);
         }
     }
 }
@@ -79,210 +126,144 @@ body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
 
-  background: 
-    linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)),
-    url('sis.jpg');
+  background:
+    linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)),
+    url('image.jpg');
 
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   background-attachment: fixed;
 
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-
-  animation: fadeIn 0.8s ease-in;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Glass Container */
+/* MAIN CARD (MORE WHITE & BRIGHT) */
 .container {
   width: 100%;
   max-width: 420px;
 
-  position: relative;
-
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.35); /* brighter */
   backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
 
   padding: 40px 30px;
   border-radius: 20px;
 
-  border: 1px solid rgba(255,80,80,0.25); /* subtle red hint */
+  border: 1px solid rgba(255, 255, 255, 0.5);
 
-  box-shadow: 
-    0 10px 40px rgba(0,0,0,0.4),
-    inset 0 0 15px rgba(255,0,0,0.08);
-
-  animation: slideUp 0.7s ease;
+  box-shadow: 0 15px 45px rgba(0,0,0,0.35);
 }
 
-/* Glow border */
-.container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,80,80,0.2));
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
+/* TITLE */
 .container h1 {
   text-align: center;
-  color: #fff;
-  margin-bottom: 25px;
-  font-size: 28px;
-  text-shadow: 0 2px 10px rgba(255,0,0,0.4); /* red glow */
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
 
-/* Inputs & Select */
-.container form input,
-.container form select {
+/* INPUT FIELDS */
+input, select {
   width: 100%;
   padding: 12px;
+  margin-top: 5px;
   margin-bottom: 5px;
 
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.85); /* VERY CLEAR */
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 8px;
 
-  color: #fff;
+  color: #111;  /* dark text for readability */
   font-size: 14px;
 
-  transition: all 0.3s ease;
-}
-
-.container form input::placeholder {
-  color: rgba(255,255,255,0.7);
-}
-
-/* 🔴 Focus red accent */
-.container form input:focus,
-.container form select:focus {
-  border-color: #ff3b3b;
-  box-shadow: 0 0 10px rgba(255,0,0,0.4);
   outline: none;
 }
 
-/* Dropdown */
-.container form select option {
-  background: #1e1e1e;
-  color: #ffffff;
+/* INPUT FOCUS */
+input:focus, select:focus {
+  border: 1px solid #00c853;
+  box-shadow: 0 0 8px rgba(0,200,83,0.4);
 }
 
-/* 🔴 Button (MAIN RED ACCENT) */
-.container form button {
+/* BUTTON */
+button {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
 
-  background: linear-gradient(135deg, #ff3b3b, #b30000);
-
+  background: linear-gradient(135deg, #f1120a, #ff0a0a);
   color: #fff;
 
   border: none;
   border-radius: 8px;
 
-  font-size: 15px;
-  font-weight: bold;
-
   cursor: pointer;
-
-  transition: all 0.3s ease;
-
-  box-shadow: 0 5px 15px rgba(255,0,0,0.4);
-}
-
-.container form button:hover {
-  background: linear-gradient(135deg, #ff5c5c, #d10000);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(255,0,0,0.5);
-}
-
-/* Text & Links */
-.container p {
-  text-align: center;
-  margin-top: 18px;
-  color: rgba(255,255,255,0.9);
-}
-
-.container a {
-  color: #ff4d4d;
   font-weight: bold;
-  text-decoration: none;
 }
 
-.container a:hover {
-  text-decoration: underline;
-}
-
-/* Error + Success */
+/* ERROR TEXT (FIXED VISIBILITY) */
 .error-msg {
-  color: #ff6b6b;
-  font-size: 12px;
+  color: #ff3b3b;   /* strong red */
+  font-size: 13px;
+  font-weight: 600;
   margin-bottom: 8px;
+
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 
+/* SUCCESS MESSAGE */
 .message {
   text-align: center;
-  margin-bottom: 15px;
-  color: #7CFF6B;
+  color: #00e676;
   font-weight: bold;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
-  <h1>Signup</h1>
 
-  <?php if ($message) echo "<p class='message'>$message</p>"; ?>
+<h1>Signup</h1>
 
-  <form method="POST">
+<?php if($message) echo "<div class='message'>$message</div>"; ?>
 
-    <input type="text" name="username" placeholder="Username" value="<?= htmlspecialchars($username) ?>" required>
-    <div class="error-msg"><?= $errors['username'] ?? '' ?></div>
+<form method="POST">
 
-    <input type="email" name="email" placeholder="Email" value="<?= htmlspecialchars($email) ?>" required>
-    <div class="error-msg"><?= $errors['email'] ?? '' ?></div>
+<input type="text" name="username" placeholder="Username"
+value="<?= htmlspecialchars($username) ?>">
+<div class="error-msg"><?= $errors['username'] ?? '' ?></div>
 
-    <input type="password" name="password" placeholder="Password (min 6 chars)" required>
-    <div class="error-msg"><?= $errors['password'] ?? '' ?></div>
+<input type="email" name="email" placeholder="Email"
+value="<?= htmlspecialchars($email) ?>">
+<div class="error-msg"><?= $errors['email'] ?? '' ?></div>
 
-    <select name="role" required>
-        <option value="">Select Role</option>
-        <option value="parent" <?= $role==='parent'?'selected':'' ?>>Parent</option>
-        <option value="teacher" <?= $role==='teacher'?'selected':'' ?>>Teacher</option>
-    </select>
+<input type="password" name="password" placeholder="Password">
+<div class="error-msg"><?= $errors['password'] ?? '' ?></div>
 
-    <div class="error-msg"><?= $errors['role'] ?? '' ?></div>
+<select name="role">
+  <option value="">Select Role</option>
+  <option value="parent" <?= $role=='parent'?'selected':'' ?>>Parent</option>
+  <option value="teacher" <?= $role=='teacher'?'selected':'' ?>>Teacher</option>
+</select>
 
-    <button type="submit">Signup</button>
+<div class="error-msg"><?= $errors['role'] ?? '' ?></div>
 
-    <p>Already have an account? <a href="login.php">Login here</a></p>
-  </form>
+<button type="submit">Signup</button>
+<div style="text-align:center; margin-top:15px;">
+  <span style="color:#fff;">Already have an account?</span>
+  <a href="login.php"
+     style="color:#ff3b3b; font-weight:bold; text-decoration:none; margin-left:5px;">
+    Login here
+  </a>
+</div>
+
+</form>
+
 </div>
 
 </body>
