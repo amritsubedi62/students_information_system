@@ -176,13 +176,14 @@ th {
 
 <body>
 
-<!-- BACK BUTTON -->
+<?php include "includes/admin_navbar.php"; ?>
+<!-- BACK -->
 <a href="admin_dashboard.php" class="back">←</a>
 
-<!-- NAVBAR -->
-<div class="navbar">
-    <a href="admin_dashboard.php">Student Information System</a>
-</div>
+
+<div class="container">
+
+<h2>Manage Users</h2>
 
 <div class="container">
 

@@ -10,19 +10,24 @@ include "config/db.php";
 
 $teacher_id = $_SESSION['user_id'];
 
-if (!isset($_GET['class'])) {
-    die("Class not specified.");
-}
-
-$assignedClass = intval($_GET['class']);
-
-$checkClass = mysqli_query($conn,
-    "SELECT * FROM teacher_class 
-     WHERE teacher_id='$teacher_id' 
-     AND class='$assignedClass'"
+/* ===== GET ALL ASSIGNED CLASSES ===== */
+$classesResult = mysqli_query($conn,
+    "SELECT class FROM teacher_class WHERE teacher_id='$teacher_id'"
 );
 
-if (mysqli_num_rows($checkClass) == 0) {
+$assignedClasses = [];
+while ($row = mysqli_fetch_assoc($classesResult)) {
+    $assignedClasses[] = $row['class'];
+}
+
+if (empty($assignedClasses)) {
+    die("No class assigned to this teacher.");
+}
+
+/* ===== SELECT CURRENT CLASS ===== */
+$assignedClass = isset($_GET['class']) ? intval($_GET['class']) : $assignedClasses[0];
+
+if (!in_array($assignedClass, $assignedClasses)) {
     die("Unauthorized access to this class.");
 }
 
@@ -33,28 +38,23 @@ if (isset($_POST['save_student'])) {
     $roll  = intval($_POST['roll_no']);
     $id    = $_POST['id'];
 
-    $class = $assignedClass;
+    $class = intval($_POST['class']);
 
-    /* ================= VALIDATIONS ADDED ================= */
+    // SECURITY CHECK
+    if (!in_array($class, $assignedClasses)) {
+        die("Unauthorized class selection.");
+    }
 
-    // 1. Name validation
     if ($name == "" || strlen($name) < 3) {
         echo "<script>alert('Student name must be at least 3 characters');</script>";
     }
-
-    // 2. Roll range validation (IMPORTANT)
     elseif ($roll < 1 || $roll > 100) {
         echo "<script>alert('Roll number must be between 1 and 100');</script>";
     }
-
-    // 3. Class safety check
     elseif ($class < 1 || $class > 10) {
         echo "<script>alert('Class must be between 1 and 10');</script>";
     }
-
     else {
-
-        /* ================= EXISTING LOGIC (UNCHANGED) ================= */
 
         if ($id == "") {
 
@@ -130,14 +130,25 @@ if (isset($_GET['edit'])) {
 
 <a href="homepage.php" style="position:absolute; top:15px; left:15px; font-size:24px; text-decoration:none; color:white;">←</a>
 
-<?php include "includes/navbar.php"; ?>
+<?php include __DIR__ . "/includes/navbar.php"; ?>
 
 <div class="content">
+
+<!-- CLASS SWITCHER -->
+<div style="margin-bottom:15px;">
+<?php foreach($assignedClasses as $c): ?>
+    <a href="?class=<?= $c ?>"
+       style="margin-right:10px; padding:5px 10px; background:#eee; border-radius:5px; text-decoration:none;">
+       Class <?= $c ?>
+    </a>
+<?php endforeach; ?>
+</div>
+
 <h2>Manage Students (Class <?= $assignedClass ?>)</h2>
 
 <div class="dashboard">
 
-<!-- ADD / UPDATE STUDENT -->
+<!-- ADD / UPDATE -->
 <div class="card">
 <h3><?= $editData ? "Update Student" : "Add Student" ?></h3>
 
@@ -148,10 +159,18 @@ if (isset($_GET['edit'])) {
 placeholder="Student Name"
 value="<?= $editData['name'] ?? '' ?>" required>
 
-<!-- CLASS LOCKED -->
-<input type="number" name="class"
-value="<?= $assignedClass ?>"
-readonly>
+<!-- DROPDOWN CLASS -->
+<label></label>
+<select name="class" required
+        style="padding:10px; width:100%; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;">
+    
+    <?php foreach($assignedClasses as $c): ?>
+        <option value="<?= $c ?>" <?= ($assignedClass == $c ? 'selected' : '') ?>>
+            Class <?= $c ?>
+        </option>
+    <?php endforeach; ?>
+
+</select>
 
 <input type="number" name="roll_no"
 placeholder="Roll No"
@@ -183,11 +202,11 @@ $q = mysqli_query($conn,
 while ($s = mysqli_fetch_assoc($q)) {
 echo "<tr>
 <td>{$s['name']}</td>
-<td>{$s['class']}</td>
+<td>{$assignedClass}</td>
 <td>{$s['roll_no']}</td>
 <td>
-<a href='?edit={$s['id']}'>Edit</a> |
-<a class='delete' href='?delete={$s['id']}'
+<a href='?class=$assignedClass&edit={$s['id']}'>Edit</a> |
+<a class='delete' href='?class=$assignedClass&delete={$s['id']}'
 onclick='return confirm(\"Delete this student?\")'>Delete</a>
 </td>
 </tr>";

@@ -40,7 +40,7 @@ $selectedClass = $_POST['class'] ?? '';
 
 <body>
 
-<?php include "includes/navbar.php"; ?>
+<?php include "includes/admin_navbar.php"; ?>
 
 <div class="content">
 

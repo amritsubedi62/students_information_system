@@ -64,13 +64,11 @@ if ($approved) {
     <div class="dashboard">
 
       <!-- Manage Students: one card per class -->
-      <?php foreach($classes as $class): ?>
-        <div class="card">
-          <h3>Manage Students (Class <?= $class ?>)</h3>
-          <p>Add, edit, or remove student details for this class only.</p>
-          <a href="manage_students.php?class=<?= $class ?>">Go →</a>
-        </div>
-      <?php endforeach; ?>
+<div class="card">
+  <h3>Manage Students</h3>
+  <p>Manage students for your assigned classes.</p>
+  <a href="manage_students.php">Go →</a>
+</div>
 
       <!-- Other cards: show only once -->
       <div class="card">
