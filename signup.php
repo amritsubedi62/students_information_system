@@ -26,9 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim(mysqli_real_escape_string($conn, $_POST['username']));
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
     $password = trim($_POST['password']);
-    $role = trim($_POST['role']); // new role field
+    $role = trim($_POST['role']);
 
-    // Validation
     if (empty($username)) $errors['username'] = "Username is required.";
     elseif (!preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username)) $errors['username'] = "3-20 chars, letters/numbers/_ only.";
 
@@ -43,17 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($errors)) {
         $check_sql = "SELECT * FROM users WHERE username='$username' OR email='$email'";
         $check_result = mysqli_query($conn, $check_sql);
+
         if (mysqli_num_rows($check_result) > 0) {
             $errors['username'] = "Username or email already exists!";
         } else {
             $hashedPassword = customHash($password, $username);
 
             if ($role === 'teacher') {
-                // teacher signup: status = pending
                 $sql = "INSERT INTO users (username, email, password, role, status) 
                         VALUES ('$username', '$email', '$hashedPassword', 'teacher', 'pending')";
             } else {
-                // parent signup: status = approved
                 $sql = "INSERT INTO users (username, email, password, role, status) 
                         VALUES ('$username', '$email', '$hashedPassword', 'parent', 'approved')";
             }
@@ -75,97 +73,210 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signup</title>
+
 <style>
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #f0f2f5, #e3e6eb);
+
+  background: 
+    linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)),
+    url('sis.jpg');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+
   animation: fadeIn 0.8s ease-in;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Glass Container */
 .container {
   width: 100%;
   max-width: 420px;
-  background: #fff;
-  padding: 40px;
-  border-radius: 14px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-  animation: slideUp 0.6s ease;
+
+  position: relative;
+
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  padding: 40px 30px;
+  border-radius: 20px;
+
+  border: 1px solid rgba(255,255,255,0.25);
+
+  box-shadow: 
+    0 10px 40px rgba(0,0,0,0.4),
+    inset 0 0 20px rgba(255,255,255,0.1);
+
+  animation: slideUp 0.7s ease;
 }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-.container h1 { text-align: center; color: #d32f2f; margin-bottom: 25px; font-size: 28px; }
+/* Glow border */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
 
-.container form input, .container form select {
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.container h1 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 25px;
+  font-size: 28px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
+/* Inputs & Select */
+.container form input,
+.container form select {
   width: 100%;
   padding: 12px;
   margin-bottom: 5px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+
+  color: #fff;
   font-size: 14px;
-  transition: border 0.3s, box-shadow 0.3s;
+
+  transition: all 0.3s ease;
 }
-.container form input:focus, .container form select:focus {
-  border-color: #d32f2f;
-  box-shadow: 0 0 6px rgba(211,47,47,0.3);
+
+.container form input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+.container form input:focus,
+.container form select:focus {
+  border-color: #fff;
+  box-shadow: 0 0 8px rgba(255,255,255,0.4);
   outline: none;
 }
 
-.error-msg { color: red; font-size: 13px; margin-bottom: 10px; }
+/* Styled Dropdown Options */
+.container form select option {
+  background: #1e1e1e;
+  color: #ffffff;
+}
 
+/* Button */
 .container form button {
   width: 100%;
   padding: 12px;
-  background-color: #d32f2f;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
   margin-top: 10px;
+
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+
+  font-size: 15px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
 }
+
 .container form button:hover {
-  background-color: #9a0007;
-  transform: translateY(-2px);
+  background: rgba(255,255,255,0.35);
+  transform: translateY(-3px);
 }
 
-.container p { text-align: center; margin-top: 18px; color: #444; }
-.container a { color: #d32f2f; text-decoration: none; font-weight: 500; }
-.container a:hover { text-decoration: underline; }
+/* Text & Links */
+.container p {
+  text-align: center;
+  margin-top: 18px;
+  color: rgba(255,255,255,0.9);
+}
 
-.message { text-align: center; margin-bottom: 15px; color: green; font-weight: 500; animation: fadeIn 0.6s ease; }
+.container a {
+  color: #fff;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Error + Success */
+.error-msg {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.message {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #7CFF6B;
+  font-weight: bold;
+}
 </style>
+
 </head>
+
 <body>
+
 <div class="container">
   <h1>Signup</h1>
+
   <?php if ($message) echo "<p class='message'>$message</p>"; ?>
-  <form method="POST" id="signupForm">
+
+  <form method="POST">
+
     <input type="text" name="username" placeholder="Username" value="<?= htmlspecialchars($username) ?>" required>
-    <div class='error-msg'><?= $errors['username'] ?? '' ?></div>
+    <div class="error-msg"><?= $errors['username'] ?? '' ?></div>
 
     <input type="email" name="email" placeholder="Email" value="<?= htmlspecialchars($email) ?>" required>
-    <div class='error-msg'><?= $errors['email'] ?? '' ?></div>
+    <div class="error-msg"><?= $errors['email'] ?? '' ?></div>
 
     <input type="password" name="password" placeholder="Password (min 6 chars)" required>
-    <div class='error-msg'><?= $errors['password'] ?? '' ?></div>
+    <div class="error-msg"><?= $errors['password'] ?? '' ?></div>
 
     <select name="role" required>
         <option value="">Select Role</option>
         <option value="parent" <?= $role==='parent'?'selected':'' ?>>Parent</option>
         <option value="teacher" <?= $role==='teacher'?'selected':'' ?>>Teacher</option>
     </select>
-    <div class='error-msg'><?= $errors['role'] ?? '' ?></div>
+
+    <div class="error-msg"><?= $errors['role'] ?? '' ?></div>
 
     <button type="submit">Signup</button>
+
     <p>Already have an account? <a href="login.php">Login here</a></p>
   </form>
 </div>
+
 </body>
 </html>
