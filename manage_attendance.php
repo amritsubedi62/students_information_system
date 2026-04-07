@@ -173,7 +173,7 @@ button { width:100%; padding:12px; background:#e53935; color:#fff; border:none; 
 <div class="card">
     <h3>Attendance Details</h3>
 
-    <input type="date" name="attendance_date" value="<?= $today ?>" required>
+    <input type="date" name="attendance_date" value="<?= $today ?>" min="<?= $today ?>" max="<?= $today ?>" required>
 
     <select name="class" required>
         <option value="">-- Select Class --</option>

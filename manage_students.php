@@ -45,8 +45,17 @@ if (isset($_POST['save_student'])) {
         die("Unauthorized class selection.");
     }
 
-    if ($name == "" || strlen($name) < 3) {
-        echo "<script>alert('Student name must be at least 3 characters');</script>";
+    if ($name == "") {
+    echo "<script>alert('Student name is required');</script>";
+    }
+    elseif (!preg_match("/^[A-Za-z ]+$/", $name)) {
+    echo "<script>alert('Name must contain only letters and spaces (no numbers)');</script>";
+    }
+    elseif (preg_match("/^[0-9]/", $name)) {
+    echo "<script>alert('Name cannot start with a number');</script>";
+    }
+    elseif (str_word_count($name) < 2) {
+    echo "<script>alert('Please enter at least two words (First and Last name)');</script>";
     }
     elseif ($roll < 1 || $roll > 100) {
         echo "<script>alert('Roll number must be between 1 and 100');</script>";
