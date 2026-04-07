@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-/* Teacher-only access */
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     header("Location: login.php");
     exit;
@@ -11,19 +10,12 @@ include "config/db.php";
 
 $teacher_id = $_SESSION['user_id'];
 
-/* ===============================
-   FETCH ASSIGNED CLASS (NEW)
-================================ */
-
-
-/* Class must come from URL */
 if (!isset($_GET['class'])) {
     die("Class not specified.");
 }
 
 $assignedClass = intval($_GET['class']);
 
-/* Verify teacher is assigned to this class */
 $checkClass = mysqli_query($conn,
     "SELECT * FROM teacher_class 
      WHERE teacher_id='$teacher_id' 
@@ -34,24 +26,38 @@ if (mysqli_num_rows($checkClass) == 0) {
     die("Unauthorized access to this class.");
 }
 
-
-/* ===============================
-   SAVE / UPDATE STUDENT
-================================ */
+/* ================= SAVE STUDENT ================= */
 if (isset($_POST['save_student'])) {
 
-    $name  = $_POST['name'];
-    $roll  = $_POST['roll_no'];
+    $name  = trim($_POST['name']);
+    $roll  = intval($_POST['roll_no']);
     $id    = $_POST['id'];
 
-    // FORCE class (security)
     $class = $assignedClass;
 
-    if ($class < 1 || $class > 10) {
+    /* ================= VALIDATIONS ADDED ================= */
+
+    // 1. Name validation
+    if ($name == "" || strlen($name) < 3) {
+        echo "<script>alert('Student name must be at least 3 characters');</script>";
+    }
+
+    // 2. Roll range validation (IMPORTANT)
+    elseif ($roll < 1 || $roll > 100) {
+        echo "<script>alert('Roll number must be between 1 and 100');</script>";
+    }
+
+    // 3. Class safety check
+    elseif ($class < 1 || $class > 10) {
         echo "<script>alert('Class must be between 1 and 10');</script>";
-    } else {
+    }
+
+    else {
+
+        /* ================= EXISTING LOGIC (UNCHANGED) ================= */
 
         if ($id == "") {
+
             $check = mysqli_query($conn,
                 "SELECT * FROM students 
                  WHERE class='$class' AND roll_no='$roll'"
@@ -66,6 +72,7 @@ if (isset($_POST['save_student'])) {
                 );
                 echo "<script>alert('Student added successfully');</script>";
             }
+
         } else {
 
             $check = mysqli_query($conn,
@@ -90,9 +97,7 @@ if (isset($_POST['save_student'])) {
     }
 }
 
-/* ===============================
-   DELETE STUDENT (SECURE)
-================================ */
+/* ================= DELETE ================= */
 if (isset($_GET['delete'])) {
     mysqli_query($conn,
         "DELETE FROM students 
@@ -101,9 +106,7 @@ if (isset($_GET['delete'])) {
     );
 }
 
-/* ===============================
-   EDIT STUDENT (SECURE)
-================================ */
+/* ================= EDIT ================= */
 $editData = null;
 if (isset($_GET['edit'])) {
     $res = mysqli_query($conn,
