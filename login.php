@@ -75,6 +75,7 @@ body {
   background: 
     linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)),
     url('sis.jpg');
+
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -107,23 +108,23 @@ body {
   padding: 40px 30px;
   border-radius: 20px;
 
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,80,80,0.25); /* red hint */
 
   box-shadow: 
     0 10px 40px rgba(0,0,0,0.4),
-    inset 0 0 20px rgba(255,255,255,0.1);
+    inset 0 0 15px rgba(255,0,0,0.08);
 
   animation: slideUp 0.7s ease;
 }
 
-/* Glass glow border */
+/* Glow border */
 .container::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 20px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,80,80,0.2));
   -webkit-mask: 
     linear-gradient(#fff 0 0) content-box, 
     linear-gradient(#fff 0 0);
@@ -142,9 +143,10 @@ body {
   color: #fff;
   margin-bottom: 25px;
   font-size: 28px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 10px rgba(255,0,0,0.4); /* red glow */
 }
 
+/* Inputs */
 .container form input {
   width: 100%;
   padding: 12px;
@@ -166,25 +168,25 @@ body {
   color: rgba(255,255,255,0.7);
 }
 
+/* 🔴 focus red accent */
 .container form input:focus {
-  border-color: #fff;
-  box-shadow: 0 0 8px rgba(255,255,255,0.4);
+  border-color: #ff3b3b;
+  box-shadow: 0 0 10px rgba(255,0,0,0.4);
   outline: none;
 }
 
-/* Glass Button */
+/* 🔴 Button (MAIN RED ACCENT) */
 .container form button {
   width: 100%;
   padding: 12px;
 
   margin-top: 10px;
 
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #ff3b3b, #b30000);
 
   color: #fff;
 
-  border: 1px solid rgba(255,255,255,0.3);
+  border: none;
   border-radius: 8px;
 
   font-size: 15px;
@@ -193,11 +195,14 @@ body {
   cursor: pointer;
 
   transition: all 0.3s ease;
+
+  box-shadow: 0 5px 15px rgba(255,0,0,0.4);
 }
 
 .container form button:hover {
-  background: rgba(255,255,255,0.35);
+  background: linear-gradient(135deg, #ff5c5c, #d10000);
   transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255,0,0,0.5);
 }
 
 /* Links */
@@ -208,16 +213,20 @@ body {
 }
 
 .container a {
-  color: #ffffff;
-  text-decoration: underline;
+  color: #ff4d4d;
+  text-decoration: none;
   font-weight: bold;
+}
+
+.container a:hover {
+  text-decoration: underline;
 }
 
 /* Messages */
 .message {
   text-align: center;
   margin-bottom: 15px;
-  color: #ff6b6b;
+  color: #ff4d4d;
   font-weight: bold;
 }
 

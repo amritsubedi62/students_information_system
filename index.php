@@ -10,7 +10,7 @@ body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
 
-  /* Background Image with overlay */
+  /* Original Background */
   background: 
     linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)),
     url('stu.jpg');
@@ -19,6 +19,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  background-color:red;
 
   display: flex;
   justify-content: center;
@@ -48,11 +49,11 @@ body {
   padding: 50px 30px;
   border-radius: 20px;
 
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid rgba(255, 80, 80, 0.25); /* slight red border */
 
   box-shadow: 
     0 10px 40px rgba(0,0,0,0.4),
-    inset 0 0 20px rgba(255,255,255,0.1);
+    inset 0 0 15px rgba(255,0,0,0.08); /* subtle red glow */
 
   text-align: center;
 
@@ -66,7 +67,7 @@ body {
   inset: 0;
   border-radius: 20px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,80,80,0.2));
   -webkit-mask: 
     linear-gradient(#fff 0 0) content-box, 
     linear-gradient(#fff 0 0);
@@ -86,7 +87,7 @@ body {
   color: #ffffff;
   font-size: 30px;
   margin-bottom: 15px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 10px rgba(255,0,0,0.4); /* red glow */
 }
 
 /* Paragraph */
@@ -96,18 +97,17 @@ body {
   margin-bottom: 30px;
 }
 
-/* Glass Buttons */
+/* 🔴 Buttons (Main Red Accent) */
 .container button {
   width: 45%;
   padding: 12px 0;
   margin: 5px;
 
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, #ff3b3b, #b30000);
 
   color: white;
 
-  border: 1px solid rgba(255,255,255,0.3);
+  border: none;
   border-radius: 10px;
 
   font-size: 16px;
@@ -117,14 +117,14 @@ body {
 
   transition: all 0.3s ease;
 
-  box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+  box-shadow: 0 5px 15px rgba(255,0,0,0.4);
 }
 
 /* Hover Effect */
 .container button:hover {
-  background: rgba(255,255,255,0.3);
+  background: linear-gradient(135deg, #ff5c5c, #d10000);
   transform: translateY(-4px) scale(1.03);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 25px rgba(255,0,0,0.5);
 }
 
 /* Click Effect */
