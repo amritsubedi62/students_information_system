@@ -168,19 +168,10 @@ function hideUpdateForm(id){
 </head>
 
 <body>
-
+<?php include "includes/admin_navbar.php"; ?>
 <!-- BACK -->
 <a href="admin_dashboard.php" class="back">←</a>
 
-<!-- NAVBAR -->
-<div class="navbar">
-    <div class="nav-left">
-        <a href="admin_dashboard.php">Student Information System</a>
-    </div>
-
-    <a href="logout.php" class="logout-btn">🔓</a>
-
-</div>
 
 <div class="container">
 

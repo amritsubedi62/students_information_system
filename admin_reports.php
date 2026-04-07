@@ -195,7 +195,7 @@ canvas{width:100%!important;height:260px!important}
 
 <body>
 <a href="homepage.php" style="position:absolute; top:15px; left:15px; font-size:24px; text-decoration:none; color:white;">←</a>
-<?php include "includes/navbar.php"; ?>
+<?php include "includes/admin_navbar.php"; ?>
 
 <div class="container">
 <h2>Student Performance Report</h2>
