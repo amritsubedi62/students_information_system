@@ -11,12 +11,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = intval($_POST['user_id']);
 
     if (isset($_POST['update'])) {
-        $status = $_POST['status'];
-        $stmt = $conn->prepare("UPDATE users SET status=? WHERE id=?");
-        $stmt->bind_param("si", $status, $user_id);
-        $stmt->execute();
-        $stmt->close();
+    $status = $_POST['status'];
+
+    // get current status first
+    $check = $conn->prepare("SELECT status FROM users WHERE id=?");
+    $check->bind_param("i", $user_id);
+    $check->execute();
+    $result = $check->get_result();
+    $current = $result->fetch_assoc();
+    $check->close();
+
+    // BLOCK + MESSAGE
+    if ($current['status'] === 'approved' && $status === 'pending') {
+        $_SESSION['error'] = "Approved teacher cannot be changed back to Pending.";
+        header("Location: manage_users.php");
+        exit;
     }
+
+    // update allowed
+    $stmt = $conn->prepare("UPDATE users SET status=? WHERE id=?");
+    $stmt->bind_param("si", $status, $user_id);
+    $stmt->execute();
+    $stmt->close();
+
+    $_SESSION['success'] = "Status updated successfully.";
+}
 
     if (isset($_POST['delete'])) {
         $stmt = $conn->prepare("DELETE FROM users WHERE id=?");
@@ -169,6 +188,18 @@ function hideUpdateForm(id){
 
 <body>
 <?php include "includes/admin_navbar.php"; ?>
+<?php if (isset($_SESSION['error'])): ?>
+<script>
+alert("<?= $_SESSION['error']; ?>");
+</script>
+<?php unset($_SESSION['error']); endif; ?>
+
+
+<?php if (isset($_SESSION['success'])): ?>
+<script>
+alert("<?= $_SESSION['success']; ?>");
+</script>
+<?php unset($_SESSION['success']); endif; ?>
 <!-- BACK -->
 <a href="admin_dashboard.php" class="back">←</a>
 

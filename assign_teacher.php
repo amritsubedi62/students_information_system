@@ -37,7 +37,7 @@ $assigned = $conn->query("
     SELECT tc.class, u.username 
     FROM teacher_class tc
     JOIN users u ON tc.teacher_id = u.id
-    ORDER BY tc.class ASC
+    ORDER BY CAST(tc.class AS UNSIGNED) ASC
 ");
 
 $rows = [];

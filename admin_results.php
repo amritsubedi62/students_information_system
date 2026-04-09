@@ -53,14 +53,10 @@ $selectedClass = $_POST['class'] ?? '';
 <option value="">Select Class</option>
 
 <?php
-$cls = mysqli_query($conn,
-    "SELECT DISTINCT class FROM students ORDER BY class"
-);
-
-while ($c = mysqli_fetch_assoc($cls)) {
-    $sel = ($selectedClass == $c['class']) ? "selected" : "";
-    echo "<option value='{$c['class']}' $sel>
-            Class {$c['class']}
+for ($i = 1; $i <= 10; $i++) {
+    $sel = ($selectedClass == $i) ? "selected" : "";
+    echo "<option value='$i' $sel>
+            Class $i
           </option>";
 }
 ?>

@@ -30,20 +30,46 @@ if ($class !== '') {
         die("Unauthorized access to this class.");
     }
 }
+/* ================= QUICK SORT (OWN ALGORITHM) ================= */
+function quickSortStudents($array) {
+
+    if (count($array) <= 1) {
+        return $array;
+    }
+
+    $pivot = $array[0]; // choose first element as pivot
+    $left = [];
+    $right = [];
+
+    for ($i = 1; $i < count($array); $i++) {
+
+        if ($array[$i]['roll_no'] < $pivot['roll_no']) {
+            $left[] = $array[$i];
+        } else {
+            $right[] = $array[$i];
+        }
+    }
+
+    return array_merge(
+        quickSortStudents($left),
+        [$pivot],
+        quickSortStudents($right)
+    );
+}
 
 /* ================= DAILY STUDENTS ================= */
 $students = [];
 
 if ($class != '') {
     $res = $conn->query("
-        SELECT * FROM students 
-        WHERE class='$class'
-        ORDER BY roll_no
-    ");
+    SELECT * FROM students 
+    WHERE class='$class'
+");
 
     while ($row = $res->fetch_assoc()) {
         $students[] = $row;
     }
+    $students = quickSortStudents($students);
 }
 
 /* ===================================================
