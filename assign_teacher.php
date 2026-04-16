@@ -59,7 +59,6 @@ body {
     background: #f4f6f9;
 }
 
-/* NAVBAR */
 .navbar {
     background: #c0392b;
     color: white;
@@ -75,7 +74,6 @@ body {
     font-weight: bold;
 }
 
-/* BACK BUTTON */
 .back {
     position: absolute;
     top: 15px;
@@ -85,7 +83,6 @@ body {
     color: #333;
 }
 
-/* CONTENT */
 .container {
     padding: 30px;
 }
@@ -94,13 +91,11 @@ h2 {
     margin-bottom: 20px;
 }
 
-/* LAYOUT */
 .dashboard {
     display: flex;
     gap: 30px;
 }
 
-/* CARD */
 .card {
     background: white;
     padding: 20px;
@@ -113,7 +108,6 @@ h2 {
     margin-bottom: 15px;
 }
 
-/* FORM */
 label {
     display: block;
     margin-top: 10px;
@@ -139,7 +133,6 @@ button:hover {
     background: #a93226;
 }
 
-/* TABLE */
 .table-card {
     width: 500px;
 }
@@ -165,7 +158,6 @@ th {
     border-radius: 4px;
 }
 
-/* FOOT TEXT */
 .info {
     margin-top: 10px;
     font-size: 14px;
@@ -183,7 +175,6 @@ th {
 
 <div class="container">
 
-<h2>Manage Users</h2>
 
 <div class="container">
 
@@ -191,7 +182,6 @@ th {
 
 <div class="dashboard">
 
-<!-- FORM -->
 <div class="card">
 <h3>Assign Teacher</h3>
 
@@ -222,8 +212,6 @@ while($t = $teachers->fetch_assoc()):
 
 </form>
 </div>
-
-<!-- TABLE -->
 <div class="card table-card">
 <h3>Assigned Teachers</h3>
 

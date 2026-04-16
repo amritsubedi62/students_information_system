@@ -143,7 +143,6 @@ if (isset($_GET['edit'])) {
 
 <div class="content">
 
-<!-- CLASS SWITCHER -->
 <div style="margin-bottom:15px;">
 <?php foreach($assignedClasses as $c): ?>
     <a href="?class=<?= $c ?>"
@@ -157,7 +156,7 @@ if (isset($_GET['edit'])) {
 
 <div class="dashboard">
 
-<!-- ADD / UPDATE -->
+
 <div class="card">
 <h3><?= $editData ? "Update Student" : "Add Student" ?></h3>
 
@@ -168,7 +167,6 @@ if (isset($_GET['edit'])) {
 placeholder="Student Name"
 value="<?= $editData['name'] ?? '' ?>" required>
 
-<!-- DROPDOWN CLASS -->
 <label></label>
 <select name="class" required
         style="padding:10px; width:100%; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;">
@@ -191,7 +189,6 @@ value="<?= $editData['roll_no'] ?? '' ?>" required>
 </form>
 </div>
 
-<!-- STUDENT LIST -->
 <div class="card" style="width:450px;">
 <h3>Student List (Class <?= $assignedClass ?>)</h3>
 

@@ -4,9 +4,7 @@ include("config/db.php");
 $errors = [];
 $message = "";
 
-/* =========================
-   HASH FUNCTION
-========================= */
+// hash function
 function customHash($password, $username) {
     $add = "SIS_2025_" . $username;
     $input = $password . $add;
@@ -24,9 +22,7 @@ function customHash($password, $username) {
 
 $username = $email = $password = $role = "";
 
-/* =========================
-   FORM SUBMIT
-========================= */
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $username = trim(mysqli_real_escape_string($conn, $_POST['username']));
@@ -34,12 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = trim($_POST['password']);
     $role = trim($_POST['role']);
 
-    /* =========================
-       USERNAME VALIDATION
-       - starts with letter
-       - only letters & numbers
-       - min 3 chars
-    ========================= */
     if (empty($username)) {
         $errors['username'] = "Username is required.";
     }
@@ -47,9 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors['username'] = "Start with letter, only letters/numbers, min 3 chars.";
     }
 
-    /* =========================
-       EMAIL VALIDATION
-    ========================= */
     if (empty($email)) {
         $errors['email'] = "Email is required.";
     }
@@ -57,9 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors['email'] = "Invalid email format.";
     }
 
-    /* =========================
-       PASSWORD VALIDATION
-    ========================= */
     if (empty($password)) {
         $errors['password'] = "Password is required.";
     }
@@ -67,16 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors['password'] = "Password must be at least 6 characters.";
     }
 
-    /* =========================
-       ROLE VALIDATION
-    ========================= */
     if (empty($role) || !in_array($role, ['parent','teacher'])) {
         $errors['role'] = "Select a valid role.";
     }
 
-    /* =========================
-       DUPLICATE CHECK
-    ========================= */
     if (empty($errors)) {
 
         $check_sql = "SELECT * FROM users 
@@ -89,9 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    /* =========================
-       INSERT USER
-    ========================= */
     if (empty($errors)) {
 
         $hashedPassword = customHash($password, $username);
@@ -203,7 +178,7 @@ button {
   font-weight: bold;
 }
 
-/* ERROR TEXT (FIXED VISIBILITY) */
+
 .error-msg {
   color: #ff3b3b;   /* strong red */
   font-size: 13px;
@@ -213,7 +188,7 @@ button {
   text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 
-/* SUCCESS MESSAGE */
+
 .message {
   text-align: center;
   color: #00e676;

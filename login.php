@@ -89,13 +89,12 @@ body {
   animation: fadeIn 0.8s ease-in;
 }
 
-/* Page fade animation */
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* LOGIN BOX */
 .container {
   width: 100%;
   max-width: 400px;
@@ -120,13 +119,11 @@ body {
   animation: slideUp 0.7s ease;
 }
 
-/* Smooth slide animation */
 @keyframes slideUp {
   from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Glow border effect */
 .container::before {
   content: "";
   position: absolute;
@@ -146,7 +143,6 @@ body {
   pointer-events: none;
 }
 
-/* Title */
 .container h1 {
   text-align: center;
   color: #ffffff;
@@ -155,7 +151,6 @@ body {
   text-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
 
-/* Inputs */
 .container form input {
   width: 100%;
   padding: 12px;
@@ -177,14 +172,12 @@ body {
   color: rgba(0,0,0,0.6);
 }
 
-/* Focus effect */
 .container form input:focus {
   border-color: #ff3b3b;
   box-shadow: 0 0 10px rgba(255,0,0,0.3);
   outline: none;
 }
 
-/* Button */
 .container form button {
   width: 100%;
   padding: 12px;
@@ -214,14 +207,12 @@ body {
   box-shadow: 0 8px 25px rgba(255,0,0,0.45);
 }
 
-/* Text */
 .container p {
   text-align: center;
   margin-top: 18px;
   color: rgba(255,255,255,0.95);
 }
 
-/* Links */
 .container a {
   color: #ff4d4d;
   text-decoration: none;
@@ -232,7 +223,6 @@ body {
   text-decoration: underline;
 }
 
-/* Error message */
 .message {
   text-align: center;
   margin-bottom: 15px;
@@ -240,7 +230,6 @@ body {
   font-weight: bold;
 }
 
-/* Field errors */
 .error-msg {
   color: #ff6b6b;
   font-size: 12px;
@@ -271,7 +260,6 @@ body {
 </div>
 
 <script>
-// Real-time validation (unchanged logic)
 const usernameInput = document.querySelector('input[name="username"]');
 const passwordInput = document.querySelector('input[name="password"]');
 

@@ -10,7 +10,6 @@ include "config/db.php";
 
 $subjects = ['Math','Science','Social','English','Nepali'];
 
-/* ================= CLASS SELECTION ================= */
 $selectedClass = $_POST['class'] ?? '';
 ?>
 
@@ -45,8 +44,6 @@ $selectedClass = $_POST['class'] ?? '';
 <div class="content">
 
 <h2 style="text-align:center;">Class Results & Ranking</h2>
-
-<!-- ================= CLASS SELECT ================= -->
 <div class="center-search">
 <form method="POST">
 <select name="class" onchange="this.form.submit()" required>
@@ -66,12 +63,9 @@ for ($i = 1; $i <= 10; $i++) {
 </div>
 
 <?php
-/* ================= ONLY IF CLASS SELECTED ================= */
 if ($selectedClass):
 
 $selectedClass = intval($selectedClass);
-
-/* GET STUDENTS */
 $students = mysqli_query($conn,
     "SELECT * FROM students 
      WHERE class='$selectedClass' 
@@ -121,7 +115,6 @@ while ($s = mysqli_fetch_assoc($students)) {
     ];
 }
 
-/* ================= RANKING (UNCHANGED) ================= */
 function smartAssignRanks($data) {
 
     $passList = [];
@@ -173,7 +166,6 @@ function smartAssignRanks($data) {
 $data = smartAssignRanks($data);
 ?>
 
-<!-- ================= RESULT TABLE ================= -->
 <div class="full-table">
 
 <table>

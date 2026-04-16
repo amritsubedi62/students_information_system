@@ -95,7 +95,6 @@ body {
     font-size: 14px;
 }
 
-/* BACK BUTTON */
 .back {
     position: absolute;
     top: 15px;
@@ -105,7 +104,6 @@ body {
     color: #333;
 }
 
-/* CONTENT */
 .container {
     padding: 30px;
 }
@@ -114,7 +112,6 @@ h2 {
     color: #c0392b;
 }
 
-/* CARD */
 .card {
     background: white;
     padding: 20px;
@@ -123,7 +120,6 @@ h2 {
     margin-top: 20px;
 }
 
-/* TABLE */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -200,6 +196,8 @@ alert("<?= $_SESSION['error']; ?>");
 alert("<?= $_SESSION['success']; ?>");
 </script>
 <?php unset($_SESSION['success']); endif; ?>
+
+
 <!-- BACK -->
 <a href="admin_dashboard.php" class="back">←</a>
 

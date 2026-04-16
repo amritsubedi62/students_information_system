@@ -10,7 +10,6 @@ body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
 
-  /* Original Background */
   background: 
     linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)),
     url('stu.jpg');
@@ -60,7 +59,6 @@ body {
   animation: slideUp 0.7s ease;
 }
 
-/* Soft glass border glow */
 .container::before {
   content: "";
   position: absolute;
@@ -76,28 +74,23 @@ body {
   pointer-events: none;
 }
 
-/* Slide Animation */
 @keyframes slideUp {
   from { transform: translateY(30px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Heading */
 .container h1 {
   color: #ffffff;
   font-size: 30px;
   margin-bottom: 15px;
   text-shadow: 0 2px 10px rgba(255,0,0,0.4); /* red glow */
 }
-
-/* Paragraph */
 .container p {
   color: rgba(255,255,255,0.85);
   font-size: 16px;
   margin-bottom: 30px;
 }
 
-/* 🔴 Buttons (Main Red Accent) */
 .container button {
   width: 45%;
   padding: 12px 0;
@@ -120,19 +113,17 @@ body {
   box-shadow: 0 5px 15px rgba(255,0,0,0.4);
 }
 
-/* Hover Effect */
 .container button:hover {
   background: linear-gradient(135deg, #ff5c5c, #d10000);
   transform: translateY(-4px) scale(1.03);
   box-shadow: 0 8px 25px rgba(255,0,0,0.5);
 }
 
-/* Click Effect */
+
 .container button:active {
   transform: scale(0.96);
 }
 
-/* Mobile Responsive */
 @media(max-width: 480px) {
   .container {
     padding: 40px 20px;

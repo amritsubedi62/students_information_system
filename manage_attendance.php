@@ -14,7 +14,6 @@ if ($conn->connect_error) {
 $teacher_id = $_SESSION['user_id'];
 $today = date('Y-m-d');
 
-/* ================= DAILY ================= */
 $class = $_POST['class'] ?? $_GET['class'] ?? '';
 
 if ($class !== '') {
@@ -30,7 +29,6 @@ if ($class !== '') {
         die("Unauthorized access to this class.");
     }
 }
-/* ================= QUICK SORT (OWN ALGORITHM) ================= */
 function quickSortStudents($array) {
 
     if (count($array) <= 1) {
@@ -57,7 +55,6 @@ function quickSortStudents($array) {
     );
 }
 
-/* ================= DAILY STUDENTS ================= */
 $students = [];
 
 if ($class != '') {
@@ -72,9 +69,6 @@ if ($class != '') {
     $students = quickSortStudents($students);
 }
 
-/* ===================================================
-   MONTHLY ATTENDANCE - CLEAN LOGIC (FIXED)
-   =================================================== */
 
 $monthly_class = $_POST['monthly_class'] ?? '';
 $student_id    = $_POST['student_id'] ?? '';
@@ -82,13 +76,11 @@ $month         = $_POST['month'] ?? '';
 $total_days    = $_POST['total_days'] ?? '';
 $present_days  = $_POST['present_days'] ?? '';
 
-/* STEP 1: ONLY LOAD MODE (class selected) */
+
 $isLoad = !empty($monthly_class) && empty($student_id);
 
-/* STEP 2: ONLY SAVE MODE (all fields exist) */
 $isSave = !empty($student_id) && !empty($month) && !empty($total_days) && !empty($present_days);
 
-/* ================= LOAD STUDENTS ================= */
 $monthly_students = [];
 
 if ($isLoad) {
@@ -106,7 +98,6 @@ if ($isLoad) {
     }
 }
 
-/* ================= SAVE MONTHLY ATTENDANCE ================= */
 if ($isSave) {
 
     $student_id   = intval($student_id);
@@ -131,7 +122,6 @@ if ($isSave) {
         die("You can only add past months.");
     }
 
-    /* DUPLICATE CHECK */
     $check = $conn->prepare("
         SELECT id FROM attendance_monthly 
         WHERE student_id=? AND month=?
@@ -144,7 +134,7 @@ if ($isSave) {
         die("Monthly attendance already exists.");
     }
 
-    /* INSERT */
+  
     $insert = $conn->prepare("
         INSERT INTO attendance_monthly 
         (student_id, month, total_days, present_days)
@@ -191,7 +181,6 @@ button { width:100%; padding:12px; background:#e53935; color:#fff; border:none; 
 <div class="content">
 <h2>Manage Attendance</h2>
 
-<!-- ================= DAILY ATTENDANCE ================= -->
 <form method="post" action="save_attendance.php">
 
 <div class="main-container">
@@ -281,7 +270,6 @@ button { width:100%; padding:12px; background:#e53935; color:#fff; border:none; 
     ?>
 </select>
 
-<!-- STUDENT LIST -->
 <select name="student_id" required>
     <option value="">-- Select Student --</option>
     <?php foreach ($monthly_students as $st) { ?>

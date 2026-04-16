@@ -10,10 +10,6 @@ include "config/db.php";
 $teacher_id = $_SESSION['user_id'];
 
 $subjects = ['Math','Science','Social','English','Nepali'];
-
-/* ===============================
-   CLASS CONTEXT (RESTRICTED)
-================================ */
 $selectedClass = $_POST['class'] ?? '';
 
 if ($selectedClass !== '') {
@@ -191,7 +187,6 @@ function smartAssignRanks($data) {
 $data = smartAssignRanks($data);
 ?>
 
-<!-- ================= RESULT TABLE ================= -->
 <div class="full-table">
 <table>
 <tr>
